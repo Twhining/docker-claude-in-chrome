@@ -1,0 +1,30 @@
+services:
+  claude-chrome:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claude-chrome-runner
+    shm_size: "2gb"
+    ports:
+      - "6901:6901"
+      - "3000:3000"
+    volumes:
+      # Chrome-Profil (inkl. installierter Extensions & deren Login-State)
+      - chrome-profile:/root/.config/google-chrome
+      # Claude Code Auth-Verzeichnis (claude login Status)
+      - claude-auth:/root/.claude
+      # Lokaler Workspace-Ordner, z.B. für generierte Reports/Dateien
+      - ./workspace:/workspace
+    environment:
+      # VNC-Passwort für die noVNC-Verbindung (Port 6901).
+      - VNC_PASSWORD=claude1234
+      # Optional: statt "claude login" interaktiv auszuführen, kann hier
+      # alternativ ein API-Key hinterlegt werden (einfach auskommentieren
+      # und Wert setzen bzw. per .env-Datei einspeisen).
+      # - ANTHROPIC_API_KEY=sk-ant-...
+      - DISPLAY=:99
+    restart: unless-stopped
+
+volumes:
+  chrome-profile:
+  claude-auth:

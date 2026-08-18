@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Testbericht – Smart Pack Overview (SAP Neptune DXP)</title>
+<style>
+  :root {
+    --bg: #12161c;
+    --panel: #1b212b;
+    --panel-alt: #212836;
+    --border: #2c3644;
+    --text: #e6e9ef;
+    --text-dim: #9aa5b1;
+    --accent: #4da3ff;
+    --critical: #ff4d4f;
+    --critical-bg: #3a1417;
+    --medium: #ffb020;
+    --medium-bg: #3a2c10;
+    --cosmetic: #6bc96b;
+    --cosmetic-bg: #16321a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0 0 60px 0;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #182030, #0e1420);
+    padding: 32px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 6px 0; font-size: 26px; }
+  header .meta { color: var(--text-dim); font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+  .summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: -20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .summary h2 { margin-top: 0; font-size: 18px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .stat { background: var(--panel-alt); border-radius: 8px; padding: 14px 16px; border: 1px solid var(--border); }
+  .stat .num { font-size: 28px; font-weight: 700; }
+  .stat .label { color: var(--text-dim); font-size: 12.5px; margin-top: 2px; }
+  .stat.crit .num { color: var(--critical); }
+  .stat.med .num { color: var(--medium); }
+  .stat.cos .num { color: var(--cosmetic); }
+
+  h2.section-title { margin-top: 48px; padding-bottom: 8px; border-bottom: 2px solid var(--border); font-size: 20px; }
+
+  .bug {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--medium);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .bug.kritisch { border-left-color: var(--critical); background: linear-gradient(180deg, var(--critical-bg), var(--panel) 40px); }
+  .bug.mittel { border-left-color: var(--medium); background: linear-gradient(180deg, var(--medium-bg), var(--panel) 40px); }
+  .bug.kosmetisch { border-left-color: var(--cosmetic); background: linear-gradient(180deg, var(--cosmetic-bg), var(--panel) 40px); }
+  .bug-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .bug-title { font-size: 16.5px; font-weight: 700; margin: 0; }
+  .badge {
+    display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 12px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .badge.kritisch { background: var(--critical); color: #1a0203; }
+  .badge.mittel { background: var(--medium); color: #241800; }
+  .badge.kosmetisch { background: var(--cosmetic); color: #072209; }
+
+  .bug dl { margin: 14px 0 0 0; }
+  .bug dt { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 14px; }
+  .bug dd { margin: 4px 0 0 0; }
+
+  .screenshot-note {
+    margin-top: 14px; background: var(--panel-alt); border: 1px dashed var(--border);
+    border-radius: 6px; padding: 12px 16px; color: var(--text-dim); font-size: 13.5px;
+  }
+
+  code, pre {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px; color: #ffb4b4;
+    font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+  }
+  code { padding: 1px 6px; font-size: 13px; }
+
+  .ok-list { columns: 2; column-gap: 40px; margin-top: 16px; }
+  .ok-list li { break-inside: avoid; margin-bottom: 8px; color: var(--text); font-size: 14.5px; }
+  .ok-list li::marker { color: var(--cosmetic); }
+
+  footer { max-width: 1100px; margin: 60px auto 0; padding: 0 48px; color: var(--text-dim); font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="padding:0;">
+    <h1>Testbericht – Smart Pack Overview</h1>
+    <div class="meta">
+      SAP Neptune DXP Fiori-App &middot; Retail Suite Desktop &middot; Umgebung: sd6.rdss4demo.co.uk (Client 120) &middot;
+      Testlauf: TEST_DOCKERTEST &middot; Datum: 13.08.2026
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="summary">
+    <h2>Zusammenfassung</h2>
+    <p style="color:var(--text-dim); margin-bottom:0;">
+      Es wurde die Smart Pack Overview App (Tabelle "Smart Packs" inkl. Detail-Panel, Filter, Sortierung, Werthilfe,
+      Blocked-Toggle, Export, History-Dialog und Navigation) systematisch getestet. Angemeldeter Benutzer: BRAGAL,
+      Store 3001. Getestet wurden Funktionalität, Fehlerverhalten (leere Ergebnisse, ungültige/Sonderzeichen-Eingaben,
+      XSS-Payload), UI/UX sowie Navigation (App-interner Zurück-Button, Browser-Back, F5-Reload).
+    </p>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">~20</div><div class="label">Einzeltests durchgeführt</div></div>
+      <div class="stat"><div class="num">5</div><div class="label">Bugs gefunden</div></div>
+      <div class="stat crit"><div class="num">1</div><div class="label">Kritisch</div></div>
+      <div class="stat med"><div class="num">3</div><div class="label">Mittel</div></div>
+      <div class="stat cos"><div class="num">1</div><div class="label">Kosmetisch</div></div>
+    </div>
+    <p class="screenshot-note" style="margin-top:20px;">
+      Hinweis zu Screenshots: Alle unten beschriebenen Zustände wurden während des Tests als Screenshot aufgenommen
+      und visuell verifiziert (inkl. Pixel-Vergleich vor/nach der jeweiligen Aktion). Die Bilddateien liegen im
+      isolierten Browser-Sandbox-Kontext der Testautomatisierung und konnten in dieser Umgebung nicht als Datei
+      exportiert werden – die Beschreibungen unten basieren auf den tatsächlich eingesehenen Screenshots.
+    </p>
+  </div>
+
+  <h2 class="section-title">Gefundene Bugs</h2>
+
+  <div class="bug kritisch">
+    <div class="bug-header">
+      <h3 class="bug-title">1. Werthilfe "Plants, general" (Feld "Currently at") liefert bei jeder Suche 0 Treffer</h3>
+      <span class="badge kritisch">Kritisch</span>
+    </div>
+    <dl>
+      <dt>Schritte</dt>
+      <dd>Auf das Value-Help-Icon neben dem Feld "Currently at" geklickt &rarr; Dialog "Plants, general" öffnet sich.
+        Im Feld "Plant" den Wert <code>3001</code> eingegeben (dieser Wert existiert nachweislich in der Tabelle, z.&nbsp;B.
+        als "Belongs to"/"Located at" mehrerer Smart Packs) und auf "Search" geklickt. Anschließend zusätzlich eine
+        komplett leere Suche (alle Felder leer, Max hits 200) ausgeführt.</dd>
+      <dt>Erwartet</dt>
+      <dd>Die Suche nach Plant "3001" liefert mindestens einen Treffer; die leere Suche liefert eine Liste verfügbarer
+        Werke (bis zu 200 Einträge).</dd>
+      <dt>Tatsächlich</dt>
+      <dd>Beide Suchen liefern "Items (0)" – der Dialog bleibt leer. Die zugehörigen Backend-Calls
+        (<code>F4_GET_DATA</code> und <code>F4_DO_SEARCH</code>) antworten zwar mit HTTP 200, liefern aber keine
+        Datensätze zurück. In der Browser-Konsole wurde kein JavaScript-Fehler protokolliert – das Problem liegt in
+        der Datenlieferung, nicht in einem Client-Absturz. Da dieser Dialog der einzige im UI vorgesehene Weg ist,
+        einen Store/Plant für "Currently at" zu finden, ist die Filterfunktion nach Standort faktisch nicht nutzbar.</dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>Kritisch, da eine zentrale Kernfunktion (Standort-Suche/-Filterung) für Endanwender vollständig blockiert ist,
+        ohne erkennbaren Workaround innerhalb des Dialogs.</dd>
+      <dt>Konsole/Netzwerk</dt>
+      <dd>Keine JS-Fehler. Requests <code>ajax_id=F4_GET_DATA</code> und <code>ajax_id=F4_DO_SEARCH</code> &rarr; HTTP 200,
+        aber 0 Datensätze in der Antwort.</dd>
+    </dl>
+    <div class="screenshot-note">
+      Screenshot: Dialog "Plants, general" mit Feld "Plant: 3001" bzw. leeren Suchkriterien und Ergebnisliste
+      "Items (0)" wurde aufgenommen und visuell verifiziert.
+    </div>
+  </div>
+
+  <div class="bug mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">2. Detail-Tab "History" (rechtes Panel) lädt nie Daten, obwohl ein Smart-Pack-Item ausgewählt ist</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Schritte</dt>
+      <dd>Eine Smart-Pack-Zeile angeklickt (z.&nbsp;B. 30011) &rarr; rechtes Panel zeigt die zugehörigen Items
+        (142001, 142002). Im rechten Panel auf den Reiter "History" gewechselt und anschließend nacheinander auf
+        beide Items (142001 und 142002) sowie deren Pfeil-Icon geklickt.</dd>
+      <dt>Erwartet</dt>
+      <dd>Analog zum Reiter "Attributes" (der beim Item-Klick zuverlässig PO/MDOC-Daten inkl. Dokumenten-Links lädt)
+        sollte der Reiter "History" die Änderungshistorie des gewählten Items anzeigen.</dd>
+      <dt>Tatsächlich</dt>
+      <dd>Der Bereich zeigt dauerhaft den Platzhaltertext "Click on a Smart Pack Item to get History Information" an –
+        auch nach mehrfachem Klick auf verschiedene Items. Eine Netzwerk-Prüfung bestätigt: Es wird beim Item-Klick im
+        History-Tab kein einziger Backend-Request ausgelöst (im Gegensatz zum Attributes-Tab, der zuverlässig
+        <code>READ_SMART_PACK_ATTR</code> aufruft). Die Funktion ist somit nicht verdrahtet.</dd>
+      <dt>Konsole/Netzwerk</dt>
+      <dd>Keine JS-Fehler, aber auch kein Request – die Klick-Aktion hat serverseitig keinen Effekt.</dd>
+    </dl>
+    <div class="screenshot-note">
+      Screenshot: Aktiver Reiter "History" mit ausgewähltem Item (grün markiert) und weiterhin angezeigtem
+      Platzhaltertext wurde aufgenommen und visuell verifiziert.
+    </div>
+  </div>
+
+  <div class="bug mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">3. Zähler "Amount of Smart Packs" aktualisiert sich nicht bei aktivem Filter</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Schritte</dt>
+      <dd>Über den Spalten-Filter "Name" den Wert "Christmas 2026" ausgewählt (reduziert die Tabelle korrekt auf
+        1&nbsp;Zeile). Ebenso über den Spalten-Filter "Blocked" auf "true" gefiltert (reduziert korrekt auf 3&nbsp;Zeilen).</dd>
+      <dt>Erwartet</dt>
+      <dd>Der Zähler "Amount of Smart Packs" oben rechts sollte die Anzahl der aktuell sichtbaren/gefilterten Zeilen
+        widerspiegeln (1 bzw. 3).</dd>
+      <dt>Tatsächlich</dt>
+      <dd>Der Zähler bleibt in beiden Fällen unverändert bei "8" (Gesamtanzahl ungefiltert), obwohl die Tabelle
+        sichtbar nur die gefilterten Zeilen anzeigt. Dies wurde für zwei unterschiedliche Filterspalten reproduziert
+        und ist damit ein generelles, kein spalten-spezifisches Problem.</dd>
+    </dl>
+    <div class="screenshot-note">
+      Screenshot: Gefilterte Tabelle mit 1 sichtbarer Zeile ("Christmas 2026") bei weiterhin angezeigtem Zähler "8"
+      wurde aufgenommen und visuell verifiziert.
+    </div>
+  </div>
+
+  <div class="bug mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">4. Eingabe im unabhängigen Feld "Filter" verändert Wert/Platzhalter des Feldes "Search" und leert das Detail-Panel</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Schritte</dt>
+      <dd>Zeile 30011 ausgewählt (Detail-Panel zeigt Items korrekt). Anschließend in das rechts oben liegende,
+        augenscheinlich unabhängige Feld "Filter" den Text "3001" eingetippt.</dd>
+      <dt>Erwartet</dt>
+      <dd>Das Feld "Search" (mit Wert "Selected Items 1") und das rechte Detail-Panel bleiben von der Eingabe im
+        Feld "Filter" unberührt, da es sich um unterschiedliche Bedienelemente handelt.</dd>
+      <dt>Tatsächlich</dt>
+      <dd>Sobald im Feld "Filter" getippt wird, wechselt das Feld "Search" unerwartet von "Selected Items 1" auf den
+        Platzhalter/Wert "Belongs to". Gleichzeitig wird das rechte Detail-Panel (Smart Pack Items/Attributes/History)
+        zurückgesetzt auf "Click on a Smart Pack to get item information" – die zuvor getroffene Zeilenauswahl geht
+        verloren. Dieses Verhalten ist für Endanwender verwirrend, da zwei augenscheinlich unabhängige Felder sich
+        gegenseitig beeinflussen und aktive Auswahl unbemerkt verworfen wird.</dd>
+    </dl>
+    <div class="screenshot-note">
+      Screenshot: Zustand direkt nach Eingabe "3001" im Feld "Filter" mit sichtbar geändertem Feld "Search"
+      ("Belongs to") und zurückgesetztem Detail-Panel wurde aufgenommen und visuell verifiziert.
+    </div>
+  </div>
+
+  <div class="bug kosmetisch">
+    <div class="bug-header">
+      <h3 class="bug-title">5. Spalten-Filter-Icon zeigt aktiven Zustand ("1"-Badge) nach reiner Sortierung, ohne dass ein Filterwert gesetzt ist</h3>
+      <span class="badge kosmetisch">Kosmetisch</span>
+    </div>
+    <dl>
+      <dt>Schritte</dt>
+      <dd>Im Spalten-Header "Name" das Dropdown geöffnet und ausschließlich das Sortier-Icon (Pfeile auf/ab) benutzt,
+        ohne einen Wert in der darunterliegenden Werteliste anzuhaken.</dd>
+      <dt>Erwartet</dt>
+      <dd>Da kein Filterwert gesetzt wurde, sollte am Spalten-Header kein Filter-Badge erscheinen – die Sortierung
+        ist eine separate Funktion.</dd>
+      <dt>Tatsächlich</dt>
+      <dd>Nach dem Schließen des Dropdowns zeigt der Spalten-Header "Name" ein "1"-Badge, das normalerweise einen
+        aktiven Filter signalisiert. Dies bleibt auch nach einem erneuten Öffnen/Schließen des Dropdowns bestehen und
+        wird erst durch Klick auf den Refresh-Button zurückgesetzt.</dd>
+    </dl>
+    <div class="screenshot-note">
+      Screenshot: Spalten-Header "Name" mit Sortier-Icon und fälschlichem "1"-Badge trotz leerer Werteauswahl wurde
+      aufgenommen und visuell verifiziert.
+    </div>
+  </div>
+
+  <h2 class="section-title">Ohne Probleme getestete Funktionen</h2>
+  <ul class="ok-list">
+    <li>Zeilen-Klick auf einen Smart Pack lädt die zugehörigen Items im rechten Panel korrekt</li>
+    <li>Item-Klick im Reiter "Attributes" lädt PO-/MDOC-Werte inkl. funktionierender Dokumenten-Links</li>
+    <li>Spalten-Sortierung (auf-/absteigend) über den Spalten-Header funktioniert korrekt</li>
+    <li>Spalten-Filter "Blocked" (true/false) filtert die Tabelle korrekt</li>
+    <li>Freitext-Filterung im Feld "Filter" reagiert live (as-you-type) korrekt auf gültige Suchbegriffe</li>
+    <li>XSS-Testeingabe <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> im Filterfeld wird sicher als Text behandelt, kein Skript wird ausgeführt</li>
+    <li>Sehr lange Eingaben und Sonderzeichen (Umlaute, ß, Satzzeichen) im Filterfeld führen zu keinem Absturz</li>
+    <li>Leerer Ergebniszustand bei Filtern ohne Treffer wird sauber als "No data" angezeigt</li>
+    <li>Refresh-Button setzt Sortierung und Suchfeld zuverlässig auf den Ausgangszustand zurück</li>
+    <li>Export-Dropdown öffnet korrekt mit den Optionen Excel, CSV(,) und CSV(;)</li>
+    <li>App-interner Zurück-Pfeil navigiert korrekt zurück zum Dashboard</li>
+    <li>Gesetzte Filter/Auswahl bleiben beim Verlassen und erneuten Öffnen der App (Dashboard &rarr; App) erhalten</li>
+    <li>Zeilen-bezogener History-Dialog ("Smart Pack Header History", Icon in Spalte "History") öffnet korrekt mit sauberem Empty-State "No header history found for this smart pack"</li>
+    <li>Keine JavaScript-Fehler in der Browser-Konsole während der gesamten Testsitzung</li>
+    <li>Keine fehlgeschlagenen Netzwerk-Requests (alle beobachteten Calls antworteten mit HTTP 200)</li>
+  </ul>
+</div>
+
+<footer>
+  Automatisierter Testlauf via Claude in Chrome. Hinweis: Aufgrund der geringen Datenmenge (8 Smart Packs) konnte
+  Paging-/Scrolling-Verhalten bei großen Ergebnismengen nicht geprüft werden. Der Browser-Back-Button (Betriebssystem-
+  bzw. Tab-Historie) konnte nicht getestet werden, da die Single-Page-Anwendung keinen entsprechenden History-Eintrag
+  anlegt; stattdessen wurde die app-interne Zurück-Navigation geprüft.
+</footer>
+
+</body>
+</html>

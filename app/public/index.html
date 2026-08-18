@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAP Fiori App – Testen &amp; Dokumentieren</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1f2430;
+    --text-muted: #6b7280;
+    --border: #d9dce1;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent2: #4b5563;
+    --accent2-hover: #374151;
+    --success-bg: #ecfdf3;
+    --success-border: #34d399;
+    --success-text: #065f46;
+    --error-bg: #fef2f2;
+    --error-border: #f87171;
+    --error-text: #991b1b;
+    --loading-bg: #eff6ff;
+    --loading-border: #93c5fd;
+    --loading-text: #1e3a8a;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2.5rem 1rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 1.75rem;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 1.1rem 0 0.35rem;
+  }
+
+  label:first-of-type {
+    margin-top: 0;
+  }
+
+  textarea,
+  input[type="text"] {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  textarea:focus,
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  textarea {
+    min-height: 220px;
+    resize: vertical;
+    line-height: 1.4;
+  }
+
+  .hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 0.3rem;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  button {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s ease;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  #btnTest {
+    background: var(--accent);
+  }
+  #btnTest:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  #btnDoc {
+    background: var(--accent2);
+  }
+  #btnDoc:hover:not(:disabled) {
+    background: var(--accent2-hover);
+  }
+
+  .output {
+    margin-top: 1.5rem;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border: 1px solid transparent;
+  }
+
+  .output.hidden {
+    display: none;
+  }
+
+  .output.loading {
+    background: var(--loading-bg);
+    border-color: var(--loading-border);
+    color: var(--loading-text);
+  }
+
+  .output.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+  }
+
+  .output.success a {
+    color: var(--success-text);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .output.error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    color: var(--error-text);
+    white-space: pre-wrap;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161c;
+      --card-bg: #1c1f27;
+      --text: #e7e9ee;
+      --text-muted: #9aa1af;
+      --border: #2d323d;
+      --success-bg: #0d2418;
+      --success-border: #22a06b;
+      --success-text: #6ee7b7;
+      --error-bg: #2a1313;
+      --error-border: #dc4a4a;
+      --error-text: #fca5a5;
+      --loading-bg: #10233f;
+      --loading-border: #3b6bb0;
+      --loading-text: #93c5fd;
+    }
+    textarea, input[type="text"] {
+      background: #12141a;
+      color: var(--text);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>SAP Fiori App – Testen &amp; Dokumentieren</h1>
+    <p class="subtitle">Startet <code>/test-app</code> bzw. <code>/document_app</code> über die Claude Code CLI in diesem Container.</p>
+
+    <label for="workflowPrompt">Workflow-Prompt</label>
+    <textarea id="workflowPrompt" placeholder="Füge hier den kompletten Prompt-Text ein, den du aus deinem gespeicherten Shortcut in der Claude-in-Chrome-Extension kopiert hast."></textarea>
+
+    <label for="url">URL</label>
+    <input type="text" id="url" placeholder="https://deine-fiori-app.beispiel.de/...">
+
+    <label for="outputPath">Speicherort</label>
+    <input type="text" id="outputPath" value="/workspace">
+    <div class="hint">Muss innerhalb von /workspace liegen (persistenter, gemounteter Ordner).</div>
+
+    <label for="title">Titel/Bezeichnung</label>
+    <input type="text" id="title" placeholder="z.B. Bestellübersicht">
+
+    <div class="buttons">
+      <button id="btnTest" type="button">Testen</button>
+      <button id="btnDoc" type="button">Dokumentieren</button>
+    </div>
+
+    <div id="output" class="output hidden"></div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function setButtonsDisabled(disabled) {
+    $('btnTest').disabled = disabled;
+    $('btnDoc').disabled = disabled;
+  }
+
+  async function run(mode) {
+    const workflowPrompt = $('workflowPrompt').value;
+    const url = $('url').value.trim();
+    const outputPath = $('outputPath').value.trim() || '/workspace';
+    const title = $('title').value.trim();
+
+    const out = $('output');
+    out.classList.remove('hidden', 'error', 'success');
+    out.classList.add('loading');
+    out.textContent = '⏳ Läuft... (kann bis zu 20 Minuten dauern)';
+
+    setButtonsDisabled(true);
+
+    try {
+      const response = await fetch('/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workflowPrompt, url, outputPath, title, mode }),
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = { success: false, error: `Unerwartete Antwort vom Server (Status ${response.status}).` };
+      }
+
+      out.classList.remove('loading');
+
+      if (response.ok && data.success) {
+        out.classList.add('success');
+        out.innerHTML = `✅ Fertig! <a href="${data.downloadUrl}" target="_blank" rel="noopener">${escapeHtml(data.filename)} herunterladen</a>`;
+      } else {
+        out.classList.add('error');
+        out.textContent = `❌ ${data.error || 'Unbekannter Fehler.'}`;
+      }
+    } catch (err) {
+      out.classList.remove('loading');
+      out.classList.add('error');
+      out.textContent = `❌ Netzwerkfehler: ${err.message}`;
+    } finally {
+      setButtonsDisabled(false);
+    }
+  }
+
+  $('btnTest').addEventListener('click', () => run('test'));
+  $('btnDoc').addEventListener('click', () => run('doc'));
+</script>
+</body>
+</html>

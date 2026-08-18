@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Testreport – Smart Pack Overview (Retail Suite Desktop / Neptune DXP)</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #171e2e;
+    --panel-border: #2a3348;
+    --text: #e6e9f0;
+    --muted: #9aa4b8;
+    --accent: #4ea1ff;
+    --critical: #ff4d4f;
+    --critical-bg: #3a1418;
+    --medium: #ffa94d;
+    --medium-bg: #3a2a14;
+    --cosmetic: #8c9bab;
+    --cosmetic-bg: #1c2433;
+    --ok: #52c41a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0 0 60px 0;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2236, #0f1420);
+    padding: 32px 40px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  header h1 { margin: 0 0 8px 0; font-size: 26px; }
+  header p { margin: 2px 0; color: var(--muted); font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-top: -20px;
+    margin-bottom: 40px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px;
+    text-align: center;
+  }
+  .card .num { font-size: 30px; font-weight: 700; display: block; }
+  .card .label { color: var(--muted); font-size: 12.5px; margin-top: 4px; display: block;}
+  .card.critical .num { color: var(--critical); }
+  .card.medium .num { color: var(--medium); }
+  .card.cosmetic .num { color: var(--cosmetic); }
+  .card.ok .num { color: var(--ok); }
+
+  h2.section-title {
+    font-size: 20px;
+    border-bottom: 2px solid var(--panel-border);
+    padding-bottom: 10px;
+    margin-top: 50px;
+  }
+
+  .bug {
+    border: 1px solid var(--panel-border);
+    border-left-width: 6px;
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 20px 24px;
+    margin-bottom: 22px;
+  }
+  .bug.sev-kritisch { border-left-color: var(--critical); background: linear-gradient(90deg, var(--critical-bg), var(--panel) 12%); }
+  .bug.sev-mittel { border-left-color: var(--medium); background: linear-gradient(90deg, var(--medium-bg), var(--panel) 12%); }
+  .bug.sev-kosmetisch { border-left-color: var(--cosmetic); background: linear-gradient(90deg, var(--cosmetic-bg), var(--panel) 12%); }
+
+  .bug-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;}
+  .bug-title { font-size: 17px; font-weight: 700; margin: 0; }
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .badge.kritisch { background: var(--critical); color: #fff; }
+  .badge.mittel { background: var(--medium); color: #2b1a00; }
+  .badge.kosmetisch { background: var(--cosmetic); color: #10151f; }
+
+  .bug dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px 14px; margin: 14px 0 0 0;}
+  .bug dt { color: var(--muted); font-size: 13px; padding-top: 2px;}
+  .bug dd { margin: 0; font-size: 14.5px; }
+  .bug code, .errbox code { color: #ffd479; }
+  .errbox {
+    background: #0b0f18;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 13px;
+    color: #ffb3b3;
+    margin-top: 4px;
+    white-space: pre-wrap;
+  }
+  .shot-note {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  table.ok-list { width: 100%; border-collapse: collapse; margin-top: 16px;}
+  table.ok-list th, table.ok-list td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--panel-border);
+    font-size: 14px;
+  }
+  table.ok-list th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em;}
+  table.ok-list td.status { color: var(--ok); font-weight: 600; white-space: nowrap; }
+
+  .env-box {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 16px 22px;
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 30px;
+  }
+  .env-box b { color: var(--text); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="padding:0;">
+    <h1>Testreport: Smart Pack Overview</h1>
+    <p>Retail Suite Desktop – Neptune DXP Fiori-App (Demo-Umgebung sd6.rdss4demo.co.uk)</p>
+    <p>Testdatum: 17.08.2026 &nbsp;|&nbsp; Getestet von: Claude (automatisiertes Browser-Testing)</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="summary" style="margin-top:30px;">
+    <div class="card">
+      <span class="num">~20</span>
+      <span class="label">Tests durchgeführt</span>
+    </div>
+    <div class="card">
+      <span class="num">7</span>
+      <span class="label">Befunde gesamt</span>
+    </div>
+    <div class="card critical">
+      <span class="num">2</span>
+      <span class="label">Kritisch</span>
+    </div>
+    <div class="card medium">
+      <span class="num">3</span>
+      <span class="label">Mittel</span>
+    </div>
+    <div class="card cosmetic">
+      <span class="num">2</span>
+      <span class="label">Kosmetisch</span>
+    </div>
+  </div>
+
+  <p>
+    Getestet wurde die Smart-Pack-Übersicht innerhalb der Retail Suite Desktop App (Neptune DXP / SAP Fiori Launchpad).
+    Im Fokus standen Funktionalität von Buttons, Filtern und Sortierung, Fehlerverhalten bei leeren/ungültigen Eingaben,
+    UI/UX-Verhalten (Ladezustände, Scrolling, Responsive-Design) sowie Navigationsverhalten (Browser-Back, F5-Reload).
+    Während der gesamten Testsitzung wurden keine unbehandelten JavaScript-Fehler in der Browser-Konsole festgestellt –
+    mehrere der gefundenen Probleme sind &bdquo;stille&ldquo; Fehler (falsche/fehlende Daten ohne Fehlermeldung), was
+    sie für Endanwender schwerer erkennbar macht.
+  </p>
+
+  <h2 class="section-title">Gefundene Probleme</h2>
+
+  <!-- BUG 1 -->
+  <div class="bug sev-kritisch">
+    <div class="bug-header">
+      <h3 class="bug-title">1. Dokumenten-Links (Purchase Order / Material Document) führen zu Navigationsfehler</h3>
+      <span class="badge kritisch">Kritisch</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Rechtes Panel &rarr; Tab &bdquo;Attributes&ldquo; &rarr; Spalte &bdquo;Document Link&ldquo;</dd>
+      <dt>Aktion</dt><dd>Smart Pack 30011 ausgewählt, Item 142001 angeklickt, anschließend auf den Link <code>Purchase Order</code> geklickt (Attribute-Wert PO 4500000390-00020). Analog getestet mit dem Link <code>Material Document</code> (MDOC 4900001623-000010).</dd>
+      <dt>Erwartet</dt><dd>Navigation zum entsprechenden Bestellbeleg bzw. Materialbeleg in einer Folge-App.</dd>
+      <dt>Tatsächlich</dt><dd>Es öffnet sich ein neuer Browser-Tab, der sofort mit einer SAP-Fehlermeldung endet. Betrifft <b>beide</b> Dokumenttypen (PO und MDOC) – die Zielapps sind im Launchpad nicht korrekt verknüpft/berechtigt.</dd>
+      <dt>Fehlermeldung</dt>
+      <dd>
+        <div class="errbox">App could not be opened either due to an incorrect SAP Fiori launchpad configuration or a missing role assignment.
+
+Failed to resolve navigation target "#PurchaseOrder-display?PurchaseOrder=4500000390". This is most likely caused by an incorrect SAP Fiori launchpad content configuration or by a missing role assignment.</div>
+      </dd>
+      <dt>Konsole</dt><dd>Keine zusätzlichen JS-Fehler im Ursprungs-Tab; der Fehler wird von der Ziel-App selbst als SAP-Standarddialog angezeigt.</dd>
+    </dl>
+    <p class="shot-note">Screenshot während der Testsitzung aufgenommen (Fehlerdialog &bdquo;App could not be opened&ldquo;) – Bilddatei konnte aus der isolierten Browser-Testumgebung nicht in dieses Dateisystem exportiert werden; Wortlaut der Fehlermeldung wurde oben 1:1 übernommen.</p>
+  </div>
+
+  <!-- BUG 2 -->
+  <div class="bug sev-kritisch">
+    <div class="bug-header">
+      <h3 class="bug-title">2. Zähler &bdquo;Amount of Smart Packs&ldquo; aktualisiert sich nicht bei gesetzten Filtern</h3>
+      <span class="badge kritisch">Kritisch</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Kopfbereich der Übersicht, grüner Zähler oben rechts neben &bdquo;Smart Packs&ldquo;</dd>
+      <dt>Aktion</dt><dd>EAN-Spaltenfilter geöffnet, Werte <code>30011</code> und <code>55555</code> ausgewählt und mit OK bestätigt. Ebenso getestet mit dem freien Filter-Textfeld und einem Suchbegriff ohne Treffer (<code>XYZNONEXISTENTVALUE12345</code>).</dd>
+      <dt>Erwartet</dt><dd>Zähler zeigt die Anzahl der aktuell sichtbaren (gefilterten) Zeilen, z.&nbsp;B. 2 bzw. 0 bei leerem Ergebnis.</dd>
+      <dt>Tatsächlich</dt><dd>Zähler bleibt dauerhaft bei <b>8</b> (Gesamtanzahl vor Filterung) – auch wenn die Tabelle nur 2 Zeilen oder gar keine Zeilen (&bdquo;No data&ldquo;) anzeigt. Das ist irreführend, da der Anwender der Kopfzahl nicht mehr vertrauen kann.</dd>
+      <dt>Konsole</dt><dd>Keine Fehler – der Zähler wird schlicht nicht neu berechnet/gebunden.</dd>
+    </dl>
+    <p class="shot-note">Screenshot mit Filteransicht (2 Zeilen sichtbar, Zähler zeigt weiterhin &bdquo;8&ldquo;) während der Sitzung dokumentiert.</p>
+  </div>
+
+  <!-- BUG 3 -->
+  <div class="bug sev-mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">3. History-Tab im Detailbereich lädt nie Daten</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Rechtes Panel &rarr; Tab &bdquo;History&ldquo; (Uhrensymbol) unterhalb der Smart-Pack-Item-Liste</dd>
+      <dt>Aktion</dt><dd>Mehrere Smart Packs und deren Items ausgewählt (u.&nbsp;a. 30011 / Item 142002, 142001), anschließend auf den History-Tab gewechselt.</dd>
+      <dt>Erwartet</dt><dd>Anzeige der Änderungshistorie zum gewählten Item (analog zum funktionierenden Attributes-Tab).</dd>
+      <dt>Tatsächlich</dt><dd>Panel zeigt dauerhaft nur den Platzhaltertext &bdquo;Click on a Smart Pack Item to get History Information&ldquo; – unabhängig davon, welches Item oder welcher Smart Pack ausgewählt wird.</dd>
+      <dt>Root Cause (Netzwerk)</dt><dd>Analyse der Netzwerk-Requests zeigt: Beim Klick auf ein Item wird ausschließlich der Endpoint <code>READ_SMART_PACK_ATTR</code> aufgerufen – unabhängig davon, ob der Attributes- oder History-Tab aktiv ist. Es existiert offenbar kein Aufruf für einen History-Endpoint beim Item-Klick; der Tab ist nicht mit einer Datenquelle verbunden.</dd>
+      <dt>Hinweis</dt><dd>Ein separates, zeilenbezogenes History-Icon in der Tabelle selbst (Spalte &bdquo;History&ldquo;) funktioniert hingegen korrekt und zeigt einen sauberen Leerzustand (&bdquo;No header history found for this smart pack&ldquo;) – das Problem betrifft nur den Tab im rechten Detailbereich.</dd>
+    </dl>
+  </div>
+
+  <!-- BUG 4 -->
+  <div class="bug sev-mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">4. Attributes-Panel lädt keine Daten für Smart Pack &bdquo;Christmas 2026&ldquo; (EAN 55555)</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Rechtes Panel &rarr; Tab &bdquo;Attributes&ldquo;</dd>
+      <dt>Aktion</dt><dd>Smart Pack &bdquo;Christmas 2026&ldquo; (EAN 55555) ausgewählt, danach auf dessen einziges Item 142001 (5 CAR) geklickt. Test mehrfach wiederholt zur Bestätigung.</dd>
+      <dt>Erwartet</dt><dd>Anzeige der Attribute (PO/MDOC) für Item 142001, wie es bei allen anderen getesteten Smart Packs funktioniert.</dd>
+      <dt>Tatsächlich</dt><dd>Panel bleibt reproduzierbar bei &bdquo;Click on a Smart Pack Item to get Attribute Information&ldquo; hängen. Bei identischer Vorgehensweise für andere Smart Packs (z.&nbsp;B. 30011, 3001A00126) funktioniert das Laden der Attribute einwandfrei – das Problem ist spezifisch für diesen einen Datensatz.</dd>
+      <dt>Vermutete Ursache</dt><dd>Möglicherweise ein Datenproblem im Backend für genau diesen Smart Pack (fehlende Attribut-Zuordnung), das im Frontend nicht abgefangen wird (kein Hinweis auf &bdquo;keine Attribute vorhanden&ldquo;, stattdessen bleibt der generische Platzhaltertext stehen).</dd>
+    </dl>
+  </div>
+
+  <!-- BUG 5 -->
+  <div class="bug sev-mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">5. Responsive Layout bricht bei reduzierter Fensterbreite</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Haupttabelle der Smart-Pack-Übersicht</dd>
+      <dt>Aktion</dt><dd>Browserfenster auf 900×700px verkleinert (z.&nbsp;B. Tablet-Breite).</dd>
+      <dt>Erwartet</dt><dd>Tabelle passt sich an (z.&nbsp;B. horizontales Scrollen oder Kartenlayout), Spaltenbeschriftungen bleiben eindeutig zugeordnet.</dd>
+      <dt>Tatsächlich</dt><dd>Die Spaltenüberschrift &bdquo;Type&ldquo; wird doppelt angezeigt und der zugehörige Wert (&bdquo;Smart Pack&ldquo;) rutscht in eine eigene Zeile unterhalb der Datenzeile, losgelöst von der Spaltenstruktur. Das rechte Detailpanel wird komplett ausgeblendet und durch eine Paginierungs-Punktnavigation (&bdquo;• •&ldquo;) ersetzt, ohne erkennbaren Hinweis, wie man dorthin wechselt. Die Tabelle wirkt dadurch bei mittleren Bildschirmbreiten unübersichtlich/kaputt.</dd>
+    </dl>
+    <p class="shot-note">Screenshot bei 900×700px mit dupliziertem &bdquo;Type&ldquo;-Header dokumentiert.</p>
+  </div>
+
+  <!-- BUG 6 -->
+  <div class="bug sev-kosmetisch">
+    <div class="bug-header">
+      <h3 class="bug-title">6. Spaltenüberschriften im History-Panel stark abgeschnitten</h3>
+      <span class="badge kosmetisch">Kosmetisch</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Rechtes Panel &rarr; Tab &bdquo;History&ldquo;, Tabellenkopf &bdquo;Smart Packs History&ldquo;</dd>
+      <dt>Tatsächlich</dt><dd>Spaltenüberschriften werden nur als &bdquo;Belo...&ldquo;, &bdquo;Loca...&ldquo;, &bdquo;Bloc...&ldquo;, &bdquo;Amo...&ldquo;, &bdquo;Docu...&ldquo;, &bdquo;Exec...&ldquo; dargestellt (vermutlich &bdquo;Belongs to&ldquo;, &bdquo;Located at&ldquo;, &bdquo;Blocked&ldquo;, &bdquo;Amount&ldquo;, &bdquo;Document&ldquo;, &bdquo;Executed by&ldquo;). Das Panel ist zu schmal für die Spaltenanzahl, es gibt keine Tooltips beim Hovern.</dd>
+      <dt>Auswirkung</dt><dd>Gering, da der Tab ohnehin funktional defekt ist (siehe Befund 3) – sollte bei Behebung von Befund 3 mit adressiert werden.</dd>
+    </dl>
+  </div>
+
+  <!-- BUG 7 -->
+  <div class="bug sev-kosmetisch">
+    <div class="bug-header">
+      <h3 class="bug-title">7. Panel-Titel zeigt &bdquo;Smart Pack: &ldquo; ohne Namen bei leerem Namensfeld</h3>
+      <span class="badge kosmetisch">Kosmetisch</span>
+    </div>
+    <dl>
+      <dt>Bereich</dt><dd>Rechtes Panel, Überschrift über der Item-Tabelle</dd>
+      <dt>Aktion</dt><dd>Smart Pack mit EAN 3001A00126 ausgewählt (Feld &bdquo;Name&ldquo; ist für diesen Datensatz leer).</dd>
+      <dt>Tatsächlich</dt><dd>Überschrift lautet &bdquo;Smart Pack: &ldquo; mit einem hängenden Doppelpunkt ohne Wert, statt z.&nbsp;B. auf die EAN als Fallback auszuweichen.</dd>
+    </dl>
+  </div>
+
+  <h2 class="section-title">Funktionen ohne Probleme</h2>
+  <table class="ok-list">
+    <tr><th>Funktion</th><th style="width:120px;">Status</th></tr>
+    <tr><td>Go-Button (Datenabruf vom Server)</td><td class="status">OK</td></tr>
+    <tr><td>Refresh-Icon (Aktualisierung des Ansichtsstatus)</td><td class="status">OK</td></tr>
+    <tr><td>EAN-Spaltenfilter: Mehrfachauswahl, Suche innerhalb Filter, OK/Anwenden</td><td class="status">OK</td></tr>
+    <tr><td>EAN-Filter: Suche mit Sonderzeichen (<code>!!!@@@###</code>) &rarr; sauberes &bdquo;No data&ldquo;</td><td class="status">OK</td></tr>
+    <tr><td>Freies Filter-Textfeld: gültige Werte, ungültige/nicht existierende Werte</td><td class="status">OK</td></tr>
+    <tr><td>&bdquo;Belongs to&ldquo; / &bdquo;Located at&ldquo; Spaltenfilter-Dialoge (Öffnen, Anzeige verfügbarer Werte)</td><td class="status">OK</td></tr>
+    <tr><td>Spaltensortierung (auf-/absteigend über Filter-Dialog-Icon)</td><td class="status">OK</td></tr>
+    <tr><td>Export-Menü (Dropdown mit Excel / CSV(,) / CSV(;) öffnet korrekt)</td><td class="status">OK</td></tr>
+    <tr><td>Zeilenauswahl aktualisiert rechtes Detailpanel (Smart Pack Items) korrekt</td><td class="status">OK</td></tr>
+    <tr><td>Attributes-Tab lädt Daten korrekt (außer Befund 4)</td><td class="status">OK</td></tr>
+    <tr><td>In-Zeilen-History-Modal (&bdquo;Smart Pack Header History&ldquo;) inkl. sauberem Leerzustand</td><td class="status">OK</td></tr>
+    <tr><td>Klick auf Zeitstempel in &bdquo;Created By&ldquo; wählt Zeile aus / aktualisiert Detailbereich</td><td class="status">OK</td></tr>
+    <tr><td>F5-Reload mitten im Arbeitsablauf: App lädt sauber neu, kein Absturz</td><td class="status">OK</td></tr>
+    <tr><td>Browser-Zurück-Navigation: sauberer Wechsel zur Launchpad-Kachelansicht, kein Fehler</td><td class="status">OK</td></tr>
+    <tr><td>Vertikales Scrollen der Tabelle mit fixierter Kopfzeile</td><td class="status">OK</td></tr>
+    <tr><td>&bdquo;Blocked&ldquo;-Toggle: keine versehentliche Datenänderung bei Fehlklicks/Scroll-Interaktion</td><td class="status">OK</td></tr>
+    <tr><td>Keine unbehandelten JavaScript-Fehler in der Browser-Konsole während der gesamten Sitzung</td><td class="status">OK</td></tr>
+  </table>
+
+  <div class="env-box">
+    <b>Testumgebung:</b> https://sd6.rdss4demo.co.uk/neptune/webapp/ (Client 120, Sprache EN) &nbsp;|&nbsp;
+    <b>App:</b> Retail Suite Desktop &rarr; Smart Pack Overview &nbsp;|&nbsp;
+    <b>Neptune-Version:</b> SAP Edition 24.14.0001 (Build 24.14.1-20260512-124213) &nbsp;|&nbsp;
+    <b>Angemeldeter Benutzer:</b> BRAGAL &nbsp;|&nbsp;
+    <b>Datensatzbasis:</b> 8 Smart Packs (EAN 30011, 55555, 3001A00126, 3001C00126, 3001F00126, 3001K00126, 1234N21032, 22222)
+  </div>
+
+</div>
+
+<footer>Automatisiert erstellter Testreport &middot; DEMO_TEST &middot; /workspace/testreport_DEMO_TEST.html</footer>
+
+</body>
+</html>

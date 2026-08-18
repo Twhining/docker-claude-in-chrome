@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Testbericht – Smart Pack Overview (SAP Neptune DXP)</title>
+<style>
+  :root {
+    --bg: #12161c;
+    --panel: #1b212b;
+    --panel-alt: #212836;
+    --border: #2c3644;
+    --text: #e6e9ef;
+    --text-dim: #9aa5b1;
+    --accent: #4da3ff;
+    --critical: #ff4d4f;
+    --critical-bg: #3a1417;
+    --medium: #ffb020;
+    --medium-bg: #3a2c10;
+    --cosmetic: #6bc96b;
+    --cosmetic-bg: #16321a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0 0 60px 0;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #182030, #0e1420);
+    padding: 32px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    margin: 0 0 6px 0;
+    font-size: 26px;
+  }
+  header .meta {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+  .summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: -20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .summary h2 { margin-top: 0; font-size: 18px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .stat {
+    background: var(--panel-alt);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .stat .num { font-size: 28px; font-weight: 700; }
+  .stat .label { color: var(--text-dim); font-size: 12.5px; margin-top: 2px; }
+  .stat.crit .num { color: var(--critical); }
+  .stat.med .num { color: var(--medium); }
+  .stat.cos .num { color: var(--cosmetic); }
+
+  h2.section-title {
+    margin-top: 48px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    font-size: 20px;
+  }
+
+  .bug {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--medium);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .bug.kritisch {
+    border-left-color: var(--critical);
+    background: linear-gradient(180deg, var(--critical-bg), var(--panel) 40px);
+  }
+  .bug.mittel {
+    border-left-color: var(--medium);
+    background: linear-gradient(180deg, var(--medium-bg), var(--panel) 40px);
+  }
+  .bug.kosmetisch {
+    border-left-color: var(--cosmetic);
+    background: linear-gradient(180deg, var(--cosmetic-bg), var(--panel) 40px);
+  }
+  .bug-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .bug-title { font-size: 16.5px; font-weight: 700; margin: 0; }
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .badge.kritisch { background: var(--critical); color: #1a0203; }
+  .badge.mittel { background: var(--medium); color: #241800; }
+  .badge.kosmetisch { background: var(--cosmetic); color: #072209; }
+
+  .bug dl { margin: 14px 0 0 0; }
+  .bug dt {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 14px;
+  }
+  .bug dd { margin: 4px 0 0 0; }
+
+  .screenshot-note {
+    margin-top: 14px;
+    background: var(--panel-alt);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: var(--text-dim);
+    font-size: 13.5px;
+  }
+
+  code, pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #ffb4b4;
+    font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+  }
+  code { padding: 2px 6px; font-size: 13px; }
+  pre {
+    padding: 12px 16px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  ul.plain { margin: 4px 0 0 0; padding-left: 20px; }
+  ul.plain li { margin-bottom: 4px; }
+
+  table.ok-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.ok-list th, table.ok-list td {
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  table.ok-list th {
+    background: var(--panel-alt);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11.5px;
+    letter-spacing: 0.4px;
+  }
+  table.ok-list tr:last-child td { border-bottom: none; }
+  table.ok-list td.ok { color: var(--cosmetic); font-weight: 700; white-space: nowrap; }
+
+  footer {
+    max-width: 1100px;
+    margin: 60px auto 0 auto;
+    padding: 0 48px;
+    color: var(--text-dim);
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="padding:0;">
+    <h1>Testbericht: Smart Pack Overview (Retail Suite Desktop)</h1>
+    <div class="meta">
+      SAP Neptune DXP Fiori-App &middot; Umgebung: sd6.rdss4demo.co.uk (Client 120) &middot; Tester: BRAGAL &middot; Datum: 13.08.2026
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <h2>Zusammenfassung</h2>
+    <p style="color:var(--text-dim); margin-bottom:0;">
+      Es wurden über 20 Testbereiche in den Kategorien Funktionalität, Fehlerverhalten,
+      UI/UX und Navigation geprüft. Der Login war bereits aktiv (Session-Nutzer BRAGAL,
+      Assign Store <code>3001</code> gültig zugeordnet), ein manueller Login war nicht
+      erforderlich. Die Kern-Funktionen (Smart-Pack-Liste, Item-Auswahl, Attribute,
+      Zeilen-Historie, Filter, Export) funktionieren größtenteils. Es wurde jedoch ein
+      kritischer Defekt in der zentralen Werthilfe "Plants, general" gefunden sowie
+      mehrere mittlere und kosmetische UI-Inkonsistenzen.
+    </p>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="num">20+</div>
+        <div class="label">Testbereiche geprüft</div>
+      </div>
+      <div class="stat">
+        <div class="num">5</div>
+        <div class="label">Gefundene Probleme</div>
+      </div>
+      <div class="stat crit">
+        <div class="num">1</div>
+        <div class="label">Kritisch</div>
+      </div>
+      <div class="stat med">
+        <div class="num">2</div>
+        <div class="label">Mittel</div>
+      </div>
+      <div class="stat cos">
+        <div class="num">2</div>
+        <div class="label">Kosmetisch</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Gefundene Probleme</h2>
+
+  <!-- BUG 1 -->
+  <div class="bug kritisch">
+    <div class="bug-header">
+      <h3 class="bug-title">1. Werthilfe "Plants, general" (Felder "Search" &amp; "Currently at") liefert bei jeder Suche 0 Treffer &ndash; JS-Exception</h3>
+      <span class="badge kritisch">Kritisch</span>
+    </div>
+    <dl>
+      <dt>Was wurde gemacht</dt>
+      <dd>
+        In der Smart-Pack-Toolbar wurde sowohl über das Feld <code>Search</code>
+        (Standardwert "Selected Items 1") als auch über das Feld <code>Currently at</code>
+        der Werthilfe-Dialog <code>Plants, general</code> geöffnet. Getestet wurden
+        folgende Sucheingaben im Feld <code>Plant</code>:
+        <ul class="plain">
+          <li>Bekannter, im System real existierender Store-Code <code>3001</code>
+              (dieser Store wird in der Smart-Pack-Tabelle in jeder einzelnen Zeile
+              als "RS Zürich" angezeigt) &rarr; <code>Items (0)</code></li>
+          <li>Leeres Feld (alle Suchkriterien leer), Klick auf "Search" &rarr;
+              <code>Items (0)</code></li>
+        </ul>
+      </dd>
+      <dt>Erwartet</dt>
+      <dd>
+        Die Suche nach dem nachweislich existierenden Store <code>3001</code> sollte
+        mindestens einen Treffer liefern (dieser Store wird durchgehend in der
+        Smart-Pack-Tabelle verwendet); eine Suche mit komplett leeren Kriterien sollte
+        alle verfügbaren Plants (bis "Max hits: 200") zurückgeben.
+      </dd>
+      <dt>Tatsächlich</dt>
+      <dd>
+        Der Dialog liefert in <b>jedem</b> getesteten Fall <code>Items (0)</code>,
+        unabhängig vom Feldwert. Damit ist die Store-/Plant-Auswahl über die Werthilfe
+        &ndash; ein zentraler Bestandteil des im Workflow beschriebenen Suchprozesses
+        ("Currently at"-Auswahl) &ndash; vollständig funktionsunfähig. Zusätzlich fällt auf,
+        dass das Klicken auf das Textfeld <code>Search</code> denselben Plant-Dialog öffnet
+        wie die "Currently at"-Werthilfe, obwohl laut Workflow-Beschreibung dort eine
+        Auswahl-/Dropdown-Funktion ("Selected Items 1") erwartet wird.
+      </dd>
+      <dt>Relevanter Konsolenfehler</dt>
+      <dd>
+        <pre>[EXCEPTION] (/RSAG/PF_CO_SO_STORE_SP_LIST.view.js?24.14.1-20260512-124213:104:45)
+TypeError: Cannot read properties of undefined (reading '_oMultiSelectControl')
+    at eval (/RSAG/PF_CO_SO_STORE_SP_LIST.view.js?24.14.1-20260512-124213:105:46)</pre>
+        Die Exception tritt exakt beim Öffnen/Bedienen des Werthilfe-Dialogs auf und
+        korreliert zeitlich mit dem Ausbleiben der Suchergebnisse.
+      </dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>
+        Kritisch: Nutzer können über die vorgesehene Werthilfe keinen Store/Plant
+        auswählen. Für Anwender, deren Standard-Store nicht bereits korrekt vorbelegt
+        ist, ist damit ein zentraler Teil des Kern-Workflows blockiert. Zusätzlich
+        deutet die unbehandelte JS-Exception auf einen Programmierfehler in der
+        Multi-Select-Komponente der Store-Suche hin.
+      </dd>
+      <dt>Screenshot</dt>
+      <dd class="screenshot-note">
+        Der Dialog "Plants, general" mit Feld "Plant: 3001" und Ergebnis "Items (0)"
+        wurde während des Tests als Screenshot aufgenommen und visuell verifiziert.
+        Die Bilddatei liegt im isolierten Browser-Sandbox-Kontext und konnte in dieser
+        Umgebung nicht als Datei in den Report eingebettet werden.
+      </dd>
+    </dl>
+  </div>
+
+  <!-- BUG 2 -->
+  <div class="bug mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">2. Detail-Tab "History" lädt nie Daten, obwohl ein Smart-Pack-Item ausgewählt ist</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Was wurde gemacht</dt>
+      <dd>
+        Im rechten Detailbereich wurde eine Smart-Pack-Zeile angeklickt (z.B. "30011"),
+        wodurch die zugehörigen "Smart Pack Items" geladen wurden. Anschließend wurde
+        auf den Tab <code>History</code> gewechselt und eines der angezeigten Items
+        (z.B. Material-Nr. 142002 bzw. 142001) angeklickt. Dieser Test wurde für
+        mehrere unterschiedliche Smart Packs (30011, 3001A00126) wiederholt.
+      </dd>
+      <dt>Erwartet</dt>
+      <dd>
+        Analog zum Tab "Attributes" (der beim Klick auf ein Item korrekt
+        <code>Smart Pack Attributes for Item: 142002</code> inkl. Attributwerten und
+        Dokumentlinks anzeigt) sollte der Tab "History" die Änderungshistorie des
+        ausgewählten Items laden und anzeigen.
+      </dd>
+      <dt>Tatsächlich</dt>
+      <dd>
+        Das Item wird zwar sichtbar als ausgewählt markiert (grüner Rahmen links),
+        die Tabelle "Smart Packs History" zeigt jedoch dauerhaft den Platzhaltertext
+        <code>Click on a Smart Pack Item to get History Information</code> &ndash; auch nach
+        mehrfachem erneuten Anklicken desselben oder eines anderen Items. Es wird
+        nachweislich <b>keine</b> Netzwerkanfrage für die History-Daten ausgelöst und es
+        erscheint auch kein Fehler in der Browser-Konsole &ndash; die Funktion schlägt also
+        still fehl, ohne den Nutzer zu informieren.
+      </dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>
+        Mittel: Kein Absturz, aber eine dokumentierte Kernfunktion (Item-Historie
+        einsehen) ist komplett unbenutzbar, ohne dass der Nutzer einen Hinweis auf das
+        Problem erhält.
+      </dd>
+      <dt>Screenshot</dt>
+      <dd class="screenshot-note">
+        Zustand mit ausgewähltem Item "142001" (grün markiert) und weiterhin leerem
+        History-Panel wurde als Screenshot aufgenommen und visuell verifiziert
+        (Bilddatei im Browser-Sandbox nicht exportierbar, siehe Hinweis bei Bug 1).
+      </dd>
+    </dl>
+  </div>
+
+  <!-- BUG 3 -->
+  <div class="bug mittel">
+    <div class="bug-header">
+      <h3 class="bug-title">3. Zähler "Amount of Smart Packs" aktualisiert sich nicht bei aktivem Filter</h3>
+      <span class="badge mittel">Mittel</span>
+    </div>
+    <dl>
+      <dt>Was wurde gemacht</dt>
+      <dd>
+        Es wurde sowohl über einen Spalten-Filter (EAN-Filter-Dropdown, Mehrfachauswahl
+        "30011" + "55555") als auch über das freie Textfeld <code>Filter</code>
+        (Eingabe <code>30011</code>) die Ergebnisliste eingeschränkt.
+      </dd>
+      <dt>Erwartet</dt>
+      <dd>
+        Die Anzeige <code>Amount of Smart Packs</code> oben rechts sollte die Anzahl der
+        aktuell sichtbaren (gefilterten) Zeilen widerspiegeln.
+      </dd>
+      <dt>Tatsächlich</dt>
+      <dd>
+        Die Tabelle filtert korrekt (z.B. auf 2 bzw. 1 sichtbare Zeile(n)), der Zähler
+        <code>Amount of Smart Packs</code> zeigt jedoch unverändert weiterhin die
+        Gesamtanzahl <code>8</code> an &ndash; unabhängig vom aktiven Filter. Dies ist für
+        Anwender irreführend, da die Kennzahl suggeriert, es gäbe weiterhin 8 Datensätze,
+        obwohl nur ein Bruchteil davon sichtbar ist.
+      </dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>
+        Mittel: Kein funktionaler Blocker, aber eine irreführende KPI-Anzeige, die zu
+        Fehleinschätzungen führen kann (z.B. bei der Einschätzung, wie viele Smart Packs
+        insgesamt in einem bestimmten Zustand sind).
+      </dd>
+      <dt>Screenshot</dt>
+      <dd class="screenshot-note">
+        Zustand mit aktivem EAN-Filter (2 sichtbare Zeilen) und weiterhin angezeigtem
+        Zähler "8" wurde als Screenshot aufgenommen und visuell verifiziert (Bilddatei
+        im Browser-Sandbox nicht exportierbar, siehe Hinweis bei Bug 1).
+      </dd>
+    </dl>
+  </div>
+
+  <!-- BUG 4 -->
+  <div class="bug kosmetisch">
+    <div class="bug-header">
+      <h3 class="bug-title">4. Feld "Search" wechselt unerwartet Wert/Platzhalter beim Tippen im unabhängigen Feld "Filter"</h3>
+      <span class="badge kosmetisch">Kosmetisch</span>
+    </div>
+    <dl>
+      <dt>Was wurde gemacht</dt>
+      <dd>
+        Ausgangszustand: Feld <code>Search</code> zeigt <code>Selected Items 1</code>.
+        Anschließend wurde direkt in das unabhängige Freitext-Feld <code>Filter</code>
+        der Wert <code>30011</code> eingegeben.
+      </dd>
+      <dt>Erwartet</dt>
+      <dd>
+        Der Wert des Feldes <code>Search</code> sollte von einer Eingabe im Feld
+        <code>Filter</code> unberührt bleiben, da es sich um zwei separat beschriftete
+        Steuerelemente in der Toolbar handelt.
+      </dd>
+      <dt>Tatsächlich</dt>
+      <dd>
+        Nach der Eingabe im Filter-Feld zeigt das Feld <code>Search</code> plötzlich den
+        Platzhaltertext <code>Belongs to</code> anstelle von <code>Selected Items 1</code>.
+        Es ist für Testende nicht ersichtlich, warum eine Eingabe im Filter-Feld den
+        Zustand eines anderen, augenscheinlich unabhängigen Feldes verändert.
+      </dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>
+        Kosmetisch: Keine Funktionsblockade feststellbar, aber verwirrende, nicht
+        nachvollziehbare UI-Zustandsänderung, die Nutzer irritieren kann.
+      </dd>
+    </dl>
+  </div>
+
+  <!-- BUG 5 -->
+  <div class="bug kosmetisch">
+    <div class="bug-header">
+      <h3 class="bug-title">5. Spalten-Filter-Icon zeigt aktiven Zustand ("1"-Badge) nach reiner Sortierung, ohne dass ein Filterwert gesetzt ist</h3>
+      <span class="badge kosmetisch">Kosmetisch</span>
+    </div>
+    <dl>
+      <dt>Was wurde gemacht</dt>
+      <dd>
+        Im Spalten-Filter-Dropdown der Spalte <code>EAN</code> wurden alle
+        Checkbox-Werte deaktiviert (kein Filterwert ausgewählt), anschließend wurde nur
+        der Sortier-Umschalter (Pfeile-Icon) betätigt und mit "OK" bestätigt.
+      </dd>
+      <dt>Erwartet</dt>
+      <dd>
+        Da kein Filterwert aktiv ist, sollte die Spaltenüberschrift <code>EAN</code>
+        keinen "Filter aktiv"-Indikator anzeigen, oder es sollte klar unterscheidbar
+        sein, ob eine Sortierung oder ein Filter aktiv ist.
+      </dd>
+      <dt>Tatsächlich</dt>
+      <dd>
+        Die Spaltenüberschrift <code>EAN</code> erhält einen hervorgehobenen blauen
+        Rahmen sowie ein Badge mit der Ziffer <code>1</code>, obwohl kein einziger
+        Filterwert ausgewählt ist und die Tabelle korrekt alle 8 Zeilen anzeigt. Der
+        Indikator ist ohne Tooltip nicht eindeutig einer Sortierung oder einem Filter
+        zuzuordnen.
+      </dd>
+      <dt>Schweregrad-Begründung</dt>
+      <dd>
+        Kosmetisch: Keine Funktionsbeeinträchtigung, aber ein irreführendes visuelles
+        Signal, das Nutzer zu der falschen Annahme verleiten kann, es sei noch ein
+        Datenfilter aktiv.
+      </dd>
+    </dl>
+  </div>
+
+  <h2 class="section-title">Ohne Probleme funktionierende Bereiche</h2>
+  <table class="ok-list">
+    <thead>
+      <tr><th>Funktion</th><th>Ergebnis</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>App-Aufruf über bereitgestellte URL / bestehende Session (kein Login-Prompt nötig, Nutzer BRAGAL)</td><td class="ok">OK</td></tr>
+      <tr><td>Dashboard "Retail Suite Desktop" mit gültigem "Assign Store: 3001" und 4 Karten (Smart Pack, Inbound Deliveries, Stock Transactions, Store Stock)</td><td class="ok">OK</td></tr>
+      <tr><td>Öffnen der "Smart Pack Overview" &ndash; Tabelle "Smart Packs" zeigt korrekt 8 reale Datensätze</td><td class="ok">OK</td></tr>
+      <tr><td>Klick auf eine Smart-Pack-Zeile lädt korrekt die zugehörigen "Smart Pack Items" im rechten Panel</td><td class="ok">OK</td></tr>
+      <tr><td>Klick auf ein Item lädt korrekt "Smart Pack Attributes" inkl. Dokumentlinks (Purchase Order, Material Document)</td><td class="ok">OK</td></tr>
+      <tr><td>Zeilen-Icon "History" (Kreis-Icon je Zeile) öffnet korrekt Dialog "Smart Pack Header History" (inkl. sauberer Leermeldung "No header history found")</td><td class="ok">OK</td></tr>
+      <tr><td>"Blocked"-Toggle in der Tabelle ist rein informativ &ndash; Klick verändert keine Daten, sondern selektiert nur die Zeile</td><td class="ok">OK</td></tr>
+      <tr><td>Spalten-Filter-Dropdowns (z.B. EAN) mit Mehrfachauswahl per Checkbox filtern die Tabelle korrekt</td><td class="ok">OK</td></tr>
+      <tr><td>Freitext-Suche innerhalb eines Spalten-Filter-Dropdowns liefert bei Sonderzeichen/Injection-Payload sauber "No data", kein Absturz</td><td class="ok">OK (sicher)</td></tr>
+      <tr><td>Freitext-Feld "Filter" filtert die Tabelle live korrekt, inkl. sauberer "No data"-Anzeige bei nicht existierendem Wert</td><td class="ok">OK</td></tr>
+      <tr><td>Filter-Eingabefeld: Sonderzeichen &amp; <code>&lt;script&gt;</code>-Payload werden sicher behandelt, keine XSS-Ausführung, kein Crash</td><td class="ok">OK (sicher)</td></tr>
+      <tr><td>"Go"-Button reagiert korrekt ohne Fehler</td><td class="ok">OK</td></tr>
+      <tr><td>Refresh-Button setzt Suchfeld, Filter und Sortierung sauber auf Ausgangszustand zurück</td><td class="ok">OK</td></tr>
+      <tr><td>Export-Dropdown zeigt korrekt Excel / CSV (,) / CSV (;) (Downloads absichtlich nicht ausgelöst, s. Testrichtlinie)</td><td class="ok">OK</td></tr>
+      <tr><td>Splitter zwischen Tabelle und Detailbereich lässt sich sauber ziehen, Inhalte skalieren korrekt mit</td><td class="ok">OK</td></tr>
+      <tr><td>Responsive Verhalten bei schmalem Layout: Toolbar-Buttons (Filter, Export) kollabieren korrekt in "..."-Overflow-Menü</td><td class="ok">OK</td></tr>
+      <tr><td>App-interner Zurück-Pfeil (oben links) navigiert korrekt zurück zum Dashboard</td><td class="ok">OK</td></tr>
+      <tr><td>Browser-Back/Forward-Navigation funktioniert; beim Vorwärtsnavigieren bleibt der zuvor gesetzte Freitext-Filter erhalten</td><td class="ok">OK</td></tr>
+      <tr><td>F5-Reload mitten im Prozess &ndash; kein Absturz, sauberer Neustart der App (lokaler Filterzustand geht erwartungsgemäß verloren, kein Deep-Linking)</td><td class="ok">OK</td></tr>
+      <tr><td>Werthilfe-Dialog "Plants, general" öffnet sich visuell korrekt und lässt sich per "Cancel" sauber schließen (nur die Suche selbst liefert keine Treffer, siehe Bug 1)</td><td class="ok">OK</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<footer>
+  Testbericht automatisiert erstellt mittels Claude in Chrome Browser-Automatisierung.
+  Alle Aktionen wurden read-only bzw. nicht-persistent durchgeführt; es wurden keine
+  Datei-Downloads ausgelöst und keine Kontoeinstellungen dauerhaft verändert.
+</footer>
+
+</body>
+</html>
