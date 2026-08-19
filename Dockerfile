@@ -7,6 +7,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/root
 
 # --- Basis-Pakete, Xvfb, VNC, Fenster-Manager, noVNC -----------------------
+# build-essential: Fallback-Build-Toolchain fuer better-sqlite3 (natives
+# npm-Modul), falls fuer diese Node-/Linux-Kombination kein vorgebautes
+# Binary via prebuild-install verfuegbar sein sollte.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -21,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         websockify \
         python3 \
         x11-utils \
+        build-essential \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -33,18 +37,21 @@ RUN wget -q -O /usr/share/keyrings/google-chrome.pub https://dl.google.com/linux
     && rm -rf /var/lib/apt/lists/*
 
 # --- Node.js (LTS) + npm -----------------------------------------------------
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+# 22.x statt 20.x: better-sqlite3@13 verlangt node >=22 (engines-Feld). Mit
+# Node 20 installiert npm es trotzdem (nur eine EBADENGINE-Warnung), aber die
+# native Binary crasht dann beim ersten echten DB-Zugriff mit SIGSEGV.
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get update && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Claude Code CLI (global) ------------------------------------------------
 RUN npm install -g @anthropic-ai/claude-code
 
-# --- Web-App (Express) -------------------------------------------------------
+# --- Web-App (Express): Runner-App (server.js) + Admin-Panel (admin-server.js) ---
 WORKDIR /app
-COPY app/package.json ./
+COPY app/package.json app/package-lock.json ./
 RUN npm install --omit=dev
-COPY app/server.js ./
+COPY app/server.js app/admin-server.js app/db.js app/url-utils.js ./
 COPY app/public ./public
 
 WORKDIR /workspace
@@ -52,6 +59,6 @@ WORKDIR /workspace
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 6901
+EXPOSE 6901 3000 4000
 
 ENTRYPOINT ["/entrypoint.sh"]

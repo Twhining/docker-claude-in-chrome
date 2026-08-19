@@ -66,6 +66,13 @@ steuerbaren Chrome-Fenster.
 | `entrypoint.sh` | Startskript, das beim Containerstart alle Prozesse (Xvfb, fluxbox, Chrome, x11vnc, websockify) in der richtigen Reihenfolge hochfährt |
 | `docker-compose.yml` | Definiert Build, Port-Mapping, Volumes und Umgebungsvariablen |
 | `workspace/` | Lokaler Ordner, gemountet nach `/workspace` im Container — für Dateien/Reports, die Claude Code erzeugt |
+| `app/server.js` | Runner-App (Port 3000): Login-geschütztes Formular zum Starten von `/test-app`/`/document_app` |
+| `app/admin-server.js` | Admin-Panel (Port 4000): verwaltet Nutzer, Claude-Account-Zuordnung, Session-Zuweisung und erlaubte Ziel-URLs |
+| `app/db.js` | Gemeinsame SQLite-Anbindung (`app/data/app.db`), von beiden Servern genutzt |
+| `app/url-utils.js` | Geteilte URL-Normalisierung (Admin-Panel & Runner-App müssen URLs identisch vergleichen) |
+| `app/public/` | Frontends: `index.html` (Runner-Formular), `login.html` (Runner-Login), `admin.html` (Admin-Panel) |
+
+Details zum Nutzer-/Rechtesystem: siehe Abschnitt 5.7 weiter unten.
 
 ### Was genau passiert beim Container-Start (`entrypoint.sh`)
 
@@ -112,6 +119,8 @@ cd C:\Users\leonb\docker-claude-runner
 | Port | Wofür | Wie erreichen |
 |---|---|---|
 | **6901** | noVNC Web-UI (HTTP + WebSocket) | Browser: `http://localhost:6901/vnc.html` |
+| **3000** | Runner-App (Workflow-Prompt/URL/Testen/Dokumentieren) | Browser: `http://localhost:3000/` — Login mit E-Mail/Passwort eines im Admin-Panel angelegten Users |
+| **4000** | Admin-Panel (Nutzer-/Rechteverwaltung) | Browser: `http://localhost:4000/` — Login mit `ADMIN_PASSWORD` |
 | 5900 | Roher VNC-Port (x11vnc) | **nicht** nach außen gemappt — nur intern im Container, falls du mal einen nativen VNC-Client statt noVNC nutzen willst, müsstest du ihn zusätzlich in `docker-compose.yml` unter `ports:` freigeben |
 
 Beim Öffnen von `http://localhost:6901/vnc.html` fragt noVNC nach dem
@@ -188,6 +197,44 @@ docker compose up -d      # Container starten
 # ... im Browser oder per docker exec arbeiten ...
 docker compose down       # Container stoppen, Logins bleiben erhalten
 ```
+
+### 5.7 Nutzer-/Rechtesystem (Runner-App-Login & Admin-Panel)
+
+Zwei getrennte, unabhängige Logins:
+
+- **Admin-Panel** (`http://localhost:4000/`) — ein einziges, fest hinterlegtes
+  Passwort (`ADMIN_PASSWORD`), verwaltet Nutzer und deren Rechte.
+- **Runner-App** (`http://localhost:3000/`) — ein Login pro Nutzer
+  (E-Mail/Passwort), sieht im URL-Dropdown ausschließlich die für diesen
+  Nutzer freigegebenen Ziel-URLs. Das Backend prüft bei jedem Lauf zusätzlich
+  serverseitig, dass die übermittelte URL tatsächlich freigegeben ist (403,
+  falls nicht) — das Dropdown allein ist kein Sicherheitsmechanismus.
+
+**Erstes Setup:**
+
+1. Admin-Passwort setzen (in `docker-compose.yml` bei `ADMIN_PASSWORD`, oder
+   besser über eine `.env`-Datei), dann `docker compose up -d`.
+2. `http://localhost:4000/` öffnen, mit dem Admin-Passwort einloggen.
+3. Über "Neuen User anlegen" einen ersten Test-User anlegen (Name, E-Mail,
+   Passwort — das ist gleichzeitig sein Login für die Runner-App).
+4. Beim User auf "Details" klicken → mindestens eine erlaubte URL
+   hinzufügen (URL + optionales Label).
+5. `http://localhost:3000/` öffnen, mit der E-Mail/dem Passwort des Users
+   einloggen → die freigegebene(n) URL(s) erscheinen im Dropdown.
+
+**Wichtig:** Dieses System verwaltet nur Zugriffsrechte — es startet/stoppt
+keine Container und richtet keine Chrome-/Claude-Code-Logins ein. Die unter
+5.3/5.4 beschriebenen manuellen Logins pro Session bleiben unverändert
+nötig; `session_id`/`login_status` im Admin-Panel sind aktuell reine
+Verwaltungsfelder (Platzhalter für eine spätere echte
+Container-Verwaltung).
+
+**Passwörter:** Werden ausschließlich als bcrypt-Hash gespeichert, nie im
+Klartext geloggt. Ohne gesetzte `ADMIN_SESSION_SECRET`/`RUNNER_SESSION_SECRET`
+wird pro Containerstart ein zufälliges Secret erzeugt — bequem für den
+Anfang, bedeutet aber: alle bestehenden Logins werden bei jedem Neustart
+ungültig. Für dauerhafte Sessions beide Variablen fest setzen (z. B. per
+`.env`-Datei, `openssl rand -hex 32`).
 
 ---
 

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login – SAP Fiori App Testen &amp; Dokumentieren</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1f2430;
+    --text-muted: #6b7280;
+    --border: #d9dce1;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --error-bg: #fef2f2;
+    --error-border: #f87171;
+    --error-text: #991b1b;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 1rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  h1 { font-size: 1.3rem; margin: 0 0 0.25rem; }
+  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+
+  label { display: block; font-weight: 600; font-size: 0.85rem; margin: 1rem 0 0.35rem; }
+  label:first-of-type { margin-top: 0; }
+
+  input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+  button {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    background: var(--accent);
+    transition: background 0.15s ease;
+  }
+  button:hover:not(:disabled) { background: var(--accent-hover); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .msg { margin-top: 1rem; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid transparent; }
+  .msg.hidden { display: none; }
+  .msg.error { background: var(--error-bg); border-color: var(--error-border); color: var(--error-text); }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161c;
+      --card-bg: #1c1f27;
+      --text: #e7e9ee;
+      --text-muted: #9aa1af;
+      --border: #2d323d;
+      --error-bg: #2a1313;
+      --error-border: #dc4a4a;
+      --error-text: #fca5a5;
+    }
+    input { background: #12141a; color: var(--text); }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login</h1>
+    <p class="subtitle">SAP Fiori App – Testen &amp; Dokumentieren</p>
+
+    <label for="email">E-Mail</label>
+    <input type="email" id="email" autocomplete="username">
+
+    <label for="password">Passwort</label>
+    <input type="password" id="password" autocomplete="current-password">
+
+    <button id="btnLogin" type="button">Einloggen</button>
+
+    <div id="msg" class="msg hidden"></div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  async function login() {
+    const email = $('email').value.trim();
+    const password = $('password').value;
+    const msg = $('msg');
+    msg.classList.add('hidden');
+
+    const btn = $('btnLogin');
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        window.location.href = '/';
+      } else {
+        msg.textContent = data.error || 'Login fehlgeschlagen.';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+      }
+    } catch (err) {
+      msg.textContent = `Netzwerkfehler: ${err.message}`;
+      msg.classList.remove('hidden');
+      msg.classList.add('error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $('btnLogin').addEventListener('click', login);
+  $('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>

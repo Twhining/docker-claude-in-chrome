@@ -2,12 +2,16 @@
   "name": "claude-chrome-webapp",
   "version": "1.0.0",
   "private": true,
-  "description": "Web-UI zum Starten von /test-app und /document_app ueber die Claude Code CLI",
+  "description": "Web-UI zum Starten von /test-app und /document_app ueber die Claude Code CLI, mit Nutzer-Login/URL-Whitelist (server.js) und getrenntem Admin-Panel (admin-server.js)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:admin": "node admin-server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "better-sqlite3": "^13.0.3",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
   }
 }

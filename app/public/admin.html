@@ -23,6 +23,7 @@
     --error-text: #991b1b;
     --chip-bg: #eef2ff;
     --chip-border: #c7d2fe;
+    --details-bg: #f9fafb;
     --radius: 10px;
   }
 
@@ -38,10 +39,7 @@
     justify-content: center;
   }
 
-  .container {
-    width: 100%;
-    max-width: 1180px;
-  }
+  .container { width: 100%; max-width: 1100px; }
 
   .card {
     background: var(--card-bg);
@@ -51,21 +49,9 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
 
-  h1 {
-    font-size: 1.4rem;
-    margin: 0 0 0.25rem;
-  }
-
-  h2 {
-    font-size: 1.05rem;
-    margin: 0 0 1rem;
-  }
-
-  .subtitle {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin: 0 0 1.5rem;
-  }
+  h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+  h2 { font-size: 1.05rem; margin: 0 0 1rem; }
+  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
 
   .top-bar {
     display: flex;
@@ -76,17 +62,9 @@
 
   /* --- Login ------------------------------------------------------------ */
 
-  #loginView .card {
-    max-width: 380px;
-    margin: 4rem auto;
-  }
+  #loginView .card { max-width: 380px; margin: 4rem auto; }
 
-  label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.85rem;
-    margin: 0 0 0.35rem;
-  }
+  label { display: block; font-weight: 600; font-size: 0.85rem; margin: 0 0 0.35rem; }
 
   input[type="text"],
   input[type="email"],
@@ -103,8 +81,7 @@
     color: var(--text);
   }
 
-  input:focus,
-  select:focus {
+  input:focus, select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -122,25 +99,15 @@
     transition: background 0.15s ease;
     white-space: nowrap;
   }
-
   button:hover:not(:disabled) { background: var(--accent-hover); }
   button:disabled { opacity: 0.6; cursor: not-allowed; }
-
   button.danger { background: var(--danger); }
   button.danger:hover:not(:disabled) { background: var(--danger-hover); }
-
   button.secondary { background: var(--text-muted); }
   button.secondary:hover:not(:disabled) { background: #4b5563; }
-
   button.small { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
-  .msg {
-    margin-top: 1rem;
-    padding: 0.7rem 0.9rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    border: 1px solid transparent;
-  }
+  .msg { margin-top: 1rem; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid transparent; }
   .msg.hidden { display: none; }
   .msg.success { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
   .msg.error { background: var(--error-bg); border-color: var(--error-border); color: var(--error-text); }
@@ -156,82 +123,70 @@
     padding-bottom: 1.75rem;
     border-bottom: 1px solid var(--border);
   }
-  .new-user-form .field { flex: 1; min-width: 180px; }
+  .new-user-form .field { flex: 1; min-width: 160px; }
   .new-user-form label { margin-bottom: 0.3rem; }
 
   /* --- Table -------------------------------------------------------------- */
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-
-  th, td {
-    text-align: left;
-    padding: 0.6rem 0.5rem;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-
-  th {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
-  tr.inactive { opacity: 0.5; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr.user-row.inactive { opacity: 0.5; }
+  tr.user-row.expanded { border-bottom: none; }
+  tr.user-row.expanded td { border-bottom: none; }
 
   td.name-cell { font-weight: 600; }
   td.email-cell { color: var(--text-muted); }
+  td.muted-cell { color: var(--text-muted); }
 
-  .status-badge {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-  }
+  .status-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
   .status-not_configured { background: #f3f4f6; color: #4b5563; }
   .status-chrome_pending { background: #fef3c7; color: #92400e; }
   .status-claude_code_pending { background: #dbeafe; color: #1e40af; }
   .status-ready { background: var(--success-bg); color: var(--success-text); }
 
-  .url-list { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
-  .url-chip {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
-    border-radius: 6px;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.78rem;
-    max-width: 100%;
+  .active-badge { font-size: 0.75rem; font-weight: 600; }
+  .active-badge.yes { color: var(--success-text); }
+  .active-badge.no { color: var(--danger); }
+
+  /* --- Aufklappbarer Detailbereich pro User -------------------------------- */
+
+  tr.details-row td {
+    background: var(--details-bg);
+    padding: 1rem 1.25rem 1.25rem;
   }
-  .url-chip .url-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .url-chip .url-text .label { color: var(--text-muted); }
-  .url-chip button {
-    background: transparent;
-    color: var(--danger);
-    padding: 0 0.2rem;
-    font-weight: 700;
-    line-height: 1;
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
-  .url-chip button:hover { background: transparent; text-decoration: underline; }
-
-  .add-url-form { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .add-url-form input { width: auto; flex: 1; min-width: 110px; font-size: 0.78rem; padding: 0.35rem 0.5rem; }
-  .add-url-form button { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
-
-  .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-
-  .active-toggle { display: flex; align-items: center; gap: 0.4rem; font-weight: 400; }
+  .details-grid label { font-size: 0.75rem; }
+  .active-toggle { display: flex; align-items: center; gap: 0.4rem; font-weight: 400; margin-top: 0.4rem; }
   .active-toggle input { width: auto; }
 
-  .empty-state { color: var(--text-muted); padding: 1.5rem 0; text-align: center; }
+  .details-actions { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; }
 
+  .url-section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); margin: 0 0 0.5rem; }
+  .url-list { list-style: none; margin: 0 0 0.6rem; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; max-width: 480px; }
+  .url-chip {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: var(--chip-bg); border: 1px solid var(--chip-border);
+    border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.8rem;
+  }
+  .url-chip .url-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .url-chip .url-text .label { color: var(--text-muted); }
+  .url-chip button { background: transparent; color: var(--danger); padding: 0 0.2rem; font-weight: 700; line-height: 1; }
+  .url-chip button:hover { background: transparent; text-decoration: underline; }
+
+  .add-url-form { display: flex; gap: 0.4rem; flex-wrap: wrap; max-width: 480px; }
+  .add-url-form input { flex: 1; min-width: 140px; font-size: 0.8rem; padding: 0.4rem 0.55rem; }
+  .add-url-form button { padding: 0.4rem 0.7rem; font-size: 0.78rem; }
+
+  .toggle-btn { background: var(--text-muted); }
+  .toggle-btn:hover:not(:disabled) { background: #4b5563; }
+
+  .empty-state { color: var(--text-muted); padding: 1.5rem 0; text-align: center; }
   .hidden { display: none; }
 
   @media (prefers-color-scheme: dark) {
@@ -249,6 +204,7 @@
       --error-text: #fca5a5;
       --chip-bg: #1c2333;
       --chip-border: #33406b;
+      --details-bg: #161920;
     }
     input, select { background: #12141a; color: var(--text); }
     .status-not_configured { background: #262a33; color: #b0b7c3; }
@@ -277,7 +233,7 @@
     <div class="top-bar">
       <div>
         <h1>Admin-Panel</h1>
-        <p class="subtitle" style="margin-bottom:0;">Nutzer, Claude-Account-Zuordnung &amp; erlaubte Ziel-Webseiten verwalten.</p>
+        <p class="subtitle" style="margin-bottom:0;">Nutzer, Claude-Account-Zuordnung, Login-Zugang &amp; erlaubte Ziel-Webseiten für die Runner-App verwalten.</p>
       </div>
       <button id="btnLogout" class="secondary" type="button">Logout</button>
     </div>
@@ -289,8 +245,12 @@
         <input type="text" id="newUserName" placeholder="Max Mustermann">
       </div>
       <div class="field">
-        <label for="newUserEmail">E-Mail</label>
+        <label for="newUserEmail">E-Mail (Login-Name)</label>
         <input type="email" id="newUserEmail" placeholder="max@beispiel.de">
+      </div>
+      <div class="field">
+        <label for="newUserPassword">Passwort</label>
+        <input type="password" id="newUserPassword" placeholder="min. 8 Zeichen" autocomplete="new-password">
       </div>
       <button id="btnAddUser" type="button">User anlegen</button>
     </div>
@@ -307,7 +267,6 @@
             <th>Claude-Account</th>
             <th>Session</th>
             <th>Login-Status</th>
-            <th>Erlaubte URLs</th>
             <th>Aktiv</th>
             <th>Aktionen</th>
           </tr>
@@ -331,6 +290,7 @@
 
   let sessionOptions = [];
   let users = [];
+  let expandedUserId = null;
 
   function escapeHtml(str) {
     const div = document.createElement('div');
@@ -343,10 +303,7 @@
     el.classList.remove('hidden', 'success', 'error');
     el.classList.add(type);
   }
-
-  function hideMsg(el) {
-    el.classList.add('hidden');
-  }
+  function hideMsg(el) { el.classList.add('hidden'); }
 
   // --- Ansicht wechseln -----------------------------------------------------
 
@@ -366,11 +323,7 @@
     try {
       const res = await fetch('/admin/status');
       const data = await res.json();
-      if (data.authenticated) {
-        showPanel();
-      } else {
-        showLogin();
-      }
+      if (data.authenticated) showPanel(); else showLogin();
     } catch {
       showLogin();
     }
@@ -400,11 +353,7 @@
   }
 
   async function logout() {
-    try {
-      await fetch('/admin/logout', { method: 'POST' });
-    } finally {
-      showLogin();
-    }
+    try { await fetch('/admin/logout', { method: 'POST' }); } finally { showLogin(); }
   }
 
   // --- API-Helper: leitet bei 401 automatisch zum Login zurueck --------------
@@ -426,11 +375,7 @@
   // --- Daten laden -------------------------------------------------------
 
   async function loadSessions() {
-    try {
-      sessionOptions = await api('/api/sessions');
-    } catch (err) {
-      sessionOptions = [];
-    }
+    try { sessionOptions = await api('/api/sessions'); } catch { sessionOptions = []; }
   }
 
   async function loadUsers() {
@@ -470,52 +415,72 @@
         </li>`
       )
       .join('');
+    return items || '<li class="url-chip" style="background:transparent;border-style:dashed;">Keine URLs freigegeben.</li>';
+  }
+
+  function renderUserRow(user) {
+    const isExpanded = user.id === expandedUserId;
     return `
-      <ul class="url-list">${items}</ul>
-      <div class="add-url-form">
-        <input type="url" placeholder="https://..." data-role="new-url" data-user-id="${user.id}">
-        <input type="text" placeholder="Label (optional)" data-role="new-url-label" data-user-id="${user.id}">
-        <button type="button" class="small" data-action="add-url" data-user-id="${user.id}">+ URL</button>
-      </div>
-    `;
+      <tr class="user-row${user.active ? '' : ' inactive'}${isExpanded ? ' expanded' : ''}" data-user-id="${user.id}">
+        <td class="name-cell">${escapeHtml(user.name)}</td>
+        <td class="email-cell">${escapeHtml(user.email)}</td>
+        <td class="muted-cell">${escapeHtml(user.claude_account_email || '–')}</td>
+        <td class="muted-cell">${escapeHtml(user.session_id || '–')}</td>
+        <td><span class="status-badge status-${user.login_status}">${LOGIN_STATUS_LABELS[user.login_status] || user.login_status}</span></td>
+        <td><span class="active-badge ${user.active ? 'yes' : 'no'}">${user.active ? 'aktiv' : 'inaktiv'}</span></td>
+        <td>
+          <button type="button" class="small toggle-btn" data-action="toggle-details">${isExpanded ? 'Details ▾' : 'Details ▸'}</button>
+        </td>
+      </tr>`;
+  }
+
+  function renderDetailsRow(user) {
+    if (user.id !== expandedUserId) return '';
+    return `
+      <tr class="details-row" data-user-id="${user.id}">
+        <td colspan="7">
+          <div class="details-grid">
+            <div>
+              <label>Claude-Account-E-Mail</label>
+              <input type="email" data-field="claude_account_email" value="${escapeHtml(user.claude_account_email || '')}" placeholder="account@anthropic.com">
+            </div>
+            <div>
+              <label>Session-Zuweisung</label>
+              <select data-field="session_id">${sessionOptionsHtml(user.session_id)}</select>
+            </div>
+            <div>
+              <label>Login-Status</label>
+              <select data-field="login_status">${loginStatusOptionsHtml(user.login_status)}</select>
+            </div>
+            <div>
+              <label>Konto</label>
+              <label class="active-toggle">
+                <input type="checkbox" data-field="active" ${user.active ? 'checked' : ''}>
+                aktiv (abwählen = deaktivieren, kein Löschen)
+              </label>
+            </div>
+          </div>
+          <div class="details-actions">
+            <button type="button" data-action="save">Speichern</button>
+          </div>
+
+          <div class="url-section">
+            <h3>Erlaubte URLs</h3>
+            <ul class="url-list">${urlListHtml(user)}</ul>
+            <div class="add-url-form">
+              <input type="url" placeholder="https://..." data-role="new-url">
+              <input type="text" placeholder="Label (optional)" data-role="new-url-label">
+              <button type="button" class="small" data-action="add-url">+ URL hinzufügen</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
   }
 
   function renderUsers() {
     const tbody = $('usersTableBody');
     $('emptyState').classList.toggle('hidden', users.length > 0);
-
-    tbody.innerHTML = users
-      .map((user) => {
-        return `
-        <tr data-user-id="${user.id}" class="${user.active ? '' : 'inactive'}">
-          <td class="name-cell">${escapeHtml(user.name)}</td>
-          <td class="email-cell">${escapeHtml(user.email)}</td>
-          <td>
-            <input type="email" data-field="claude_account_email" value="${escapeHtml(user.claude_account_email || '')}" placeholder="account@anthropic.com">
-          </td>
-          <td>
-            <select data-field="session_id">${sessionOptionsHtml(user.session_id)}</select>
-          </td>
-          <td>
-            <select data-field="login_status">${loginStatusOptionsHtml(user.login_status)}</select>
-            <div style="margin-top:0.3rem;"><span class="status-badge status-${user.login_status}">${LOGIN_STATUS_LABELS[user.login_status] || user.login_status}</span></div>
-          </td>
-          <td style="min-width:220px;">${urlListHtml(user)}</td>
-          <td>
-            <label class="active-toggle">
-              <input type="checkbox" data-field="active" ${user.active ? 'checked' : ''}>
-              ${user.active ? 'aktiv' : 'inaktiv'}
-            </label>
-          </td>
-          <td>
-            <div class="row-actions">
-              <button type="button" class="small" data-action="save">Speichern</button>
-              <button type="button" class="small danger" data-action="deactivate">Deaktivieren</button>
-            </div>
-          </td>
-        </tr>`;
-      })
-      .join('');
+    tbody.innerHTML = users.map((u) => renderUserRow(u) + renderDetailsRow(u)).join('');
   }
 
   // --- User anlegen ---------------------------------------------------------
@@ -524,14 +489,16 @@
     hideMsg($('panelMsg'));
     const name = $('newUserName').value.trim();
     const email = $('newUserEmail').value.trim();
+    const password = $('newUserPassword').value;
     try {
       await api('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, password }),
       });
       $('newUserName').value = '';
       $('newUserEmail').value = '';
+      $('newUserPassword').value = '';
       await loadUsers();
       showMsg($('panelMsg'), 'User angelegt.', 'success');
     } catch (err) {
@@ -539,15 +506,15 @@
     }
   }
 
-  // --- User speichern / deaktivieren -----------------------------------------
+  // --- User speichern (Details-Panel) -----------------------------------------
 
-  async function saveUserRow(tr) {
-    const userId = tr.dataset.userId;
+  async function saveUserRow(userId) {
+    const detailsTr = document.querySelector(`tr.details-row[data-user-id="${userId}"]`);
     const body = {
-      claude_account_email: tr.querySelector('[data-field="claude_account_email"]').value.trim() || null,
-      session_id: tr.querySelector('[data-field="session_id"]').value || null,
-      login_status: tr.querySelector('[data-field="login_status"]').value,
-      active: tr.querySelector('[data-field="active"]').checked,
+      claude_account_email: detailsTr.querySelector('[data-field="claude_account_email"]').value.trim() || null,
+      session_id: detailsTr.querySelector('[data-field="session_id"]').value || null,
+      login_status: detailsTr.querySelector('[data-field="login_status"]').value,
+      active: detailsTr.querySelector('[data-field="active"]').checked,
     };
     try {
       await api(`/api/users/${userId}`, {
@@ -562,21 +529,12 @@
     }
   }
 
-  async function deactivateUser(userId) {
-    try {
-      await api(`/api/users/${userId}`, { method: 'DELETE' });
-      await loadUsers();
-      showMsg($('panelMsg'), 'User deaktiviert.', 'success');
-    } catch (err) {
-      showMsg($('panelMsg'), err.message, 'error');
-    }
-  }
-
   // --- URLs verwalten ---------------------------------------------------
 
-  async function addUrl(userId, tr) {
-    const urlInput = tr.querySelector(`[data-role="new-url"][data-user-id="${userId}"]`);
-    const labelInput = tr.querySelector(`[data-role="new-url-label"][data-user-id="${userId}"]`);
+  async function addUrl(userId) {
+    const detailsTr = document.querySelector(`tr.details-row[data-user-id="${userId}"]`);
+    const urlInput = detailsTr.querySelector('[data-role="new-url"]');
+    const labelInput = detailsTr.querySelector('[data-role="new-url-label"]');
     const url = urlInput.value.trim();
     const label = labelInput.value.trim();
     if (!url) return;
@@ -607,14 +565,16 @@
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const tr = btn.closest('tr');
+    const userId = Number(tr.dataset.userId);
     const action = btn.dataset.action;
 
-    if (action === 'save') saveUserRow(tr);
-    if (action === 'deactivate') {
-      if (confirm('Diesen User wirklich deaktivieren?')) deactivateUser(tr.dataset.userId);
+    if (action === 'toggle-details') {
+      expandedUserId = expandedUserId === userId ? null : userId;
+      renderUsers();
     }
-    if (action === 'add-url') addUrl(btn.dataset.userId, tr);
-    if (action === 'delete-url') deleteUrl(btn.dataset.urlId);
+    if (action === 'save') saveUserRow(userId);
+    if (action === 'add-url') addUrl(userId);
+    if (action === 'delete-url') deleteUrl(Number(btn.dataset.urlId));
   });
 
   $('btnLogin').addEventListener('click', login);

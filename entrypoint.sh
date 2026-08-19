@@ -52,10 +52,13 @@ x11vnc -display "$DISPLAY" -forever -shared -rfbport "$VNC_PORT" -rfbauth "$HOME
 echo "[entrypoint] Starte websockify/noVNC auf Port $NOVNC_PORT..."
 websockify --web=/usr/share/novnc "$NOVNC_PORT" "localhost:$VNC_PORT" &
 
-echo "[entrypoint] Starte Web-App (Express) auf Port ${PORT:-3000}..."
+echo "[entrypoint] Starte Runner-Web-App (Express) auf Port ${PORT:-3000}..."
 node /app/server.js &
 
-echo "[entrypoint] Setup abgeschlossen. noVNC erreichbar auf Port $NOVNC_PORT, Web-App auf Port ${PORT:-3000}."
+echo "[entrypoint] Starte Admin-Panel (Express) auf Port ${ADMIN_PORT:-4000}..."
+node /app/admin-server.js &
+
+echo "[entrypoint] Setup abgeschlossen. noVNC: Port $NOVNC_PORT, Runner-App: Port ${PORT:-3000}, Admin-Panel: Port ${ADMIN_PORT:-4000}."
 
 # Container am Leben halten
 tail -f /dev/null

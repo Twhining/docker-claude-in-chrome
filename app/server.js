@@ -1,10 +1,15 @@
 'use strict';
 
 const express = require('express');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
+const db = require('./db');
+const { normalizeUrl } = require('./url-utils');
 
 const execFileAsync = promisify(execFile);
 
@@ -20,8 +25,134 @@ const LOGIN_REGEX = /login|anmeldung|unauthorized/i;
 const LOGIN_HINT =
   'Vermutlich nicht eingeloggt – bitte im noVNC-Fenster (localhost:6901) manuell einloggen und erneut versuchen';
 
+// Fallback-Secret: zufällig pro Prozessstart, falls keine RUNNER_SESSION_SECRET
+// gesetzt ist. Invalidiert bestehende Sessions bei jedem Neustart – für diese
+// interne App unproblematisch.
+const SESSION_SECRET = process.env.RUNNER_SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
+// Dummy-Hash für bcrypt.compare() bei unbekannter E-Mail: verhindert, dass ein
+// Angreifer über die Antwortzeit unterscheiden kann, ob eine E-Mail überhaupt
+// existiert (User-Enumeration erschweren).
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('no-such-user-dummy-password', 10);
+
 app.use(express.json({ limit: '2mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    // Eigener Cookie-Name, damit sich die Runner-App-Session nicht mit der
+    // Admin-Panel-Session (admin-server.js, Cookie "admin.sid") überschneidet -
+    // beide laufen auf localhost, nur mit unterschiedlichem Port, und Cookies
+    // sind nicht portspezifisch.
+    name: 'runner.sid',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      // In Produktion hinter HTTPS zusätzlich `secure: true` setzen.
+      maxAge: 24 * 60 * 60 * 1000, // 24h
+    },
+  })
+);
+
+// -----------------------------------------------------------------------------
+// Login / Session
+// -----------------------------------------------------------------------------
+
+// Lädt den User frisch aus der DB (nicht nur die Session-userId), damit ein
+// zwischenzeitliches Deaktivieren durch den Admin sofort greift, statt erst
+// beim nächsten Login bemerkt zu werden.
+function loadSessionUser(req) {
+  if (!req.session || !req.session.userId) return null;
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
+  if (!user || !user.active) return null;
+  return user;
+}
+
+// Für normale Seitenaufrufe (Browser-Navigation): echter Redirect zu /login.
+function requireLoginPage(req, res, next) {
+  const user = loadSessionUser(req);
+  if (!user) {
+    return res.redirect('/login');
+  }
+  req.user = user;
+  next();
+}
+
+// Für fetch()/JSON-Endpunkte: 401 JSON statt Redirect, da fetch() einem
+// Redirect zwar folgt, dabei aber HTML statt JSON zurückbekäme. Das Frontend
+// erkennt den 401 und leitet selbst per location.href zu /login weiter -
+// gleicher Effekt für den Nutzer, aber fetch-tauglich.
+function requireLoginApi(req, res, next) {
+  const user = loadSessionUser(req);
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Nicht eingeloggt.' });
+  }
+  req.user = user;
+  next();
+}
+
+app.get('/login', (req, res) => {
+  if (loadSessionUser(req)) {
+    return res.redirect('/');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'E-Mail und Passwort sind erforderlich.' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const passwordOk = await bcrypt.compare(password, user ? user.password_hash : DUMMY_PASSWORD_HASH);
+
+    if (!user || !passwordOk) {
+      return res.status(401).json({ success: false, error: 'E-Mail oder Passwort falsch.' });
+    }
+    if (!user.active) {
+      return res.status(403).json({ success: false, error: 'Account deaktiviert.' });
+    }
+
+    // Session-ID nach Login neu erzeugen (schützt vor Session-Fixation).
+    req.session.regenerate((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, error: 'Login fehlgeschlagen.' });
+      }
+      req.session.userId = user.id;
+      res.json({ success: true });
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Login fehlgeschlagen.' });
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie('runner.sid');
+    res.redirect('/login');
+  });
+});
+
+app.get('/', requireLoginPage, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Liefert die für den eingeloggten User freigegebenen URLs - Grundlage für
+// das URL-Dropdown im Formular.
+app.get('/api/my-urls', requireLoginApi, (req, res) => {
+  const urls = db
+    .prepare('SELECT id, url, label FROM allowed_urls WHERE user_id = ? ORDER BY id')
+    .all(req.user.id);
+  res.json(urls);
+});
+
+app.get('/api/me', requireLoginApi, (req, res) => {
+  res.json({ name: req.user.name, email: req.user.email });
+});
 
 // ---------------------------------------------------------------------------
 // Validierung / Sanitizing
@@ -46,20 +177,25 @@ function validateWorkflowPrompt(raw) {
   return raw;
 }
 
-function validateUrl(raw) {
-  if (typeof raw !== 'string' || raw.trim() === '') {
-    throw new Error('URL darf nicht leer sein.');
+// URL-Formatvalidierung + Normalisierung kommt aus url-utils.js (dieselbe
+// Logik, die admin-server.js beim Anlegen erlaubter URLs verwendet - siehe
+// dortiger Kommentar dazu, warum das geteilt sein muss).
+const validateUrl = normalizeUrl;
+
+// Sicherheits-Muss: prüft SERVERSEITIG, dass die übermittelte (normalisierte)
+// URL tatsächlich zu den für diesen User in allowed_urls hinterlegten URLs
+// gehört. Das Dropdown im Frontend blendet nicht erlaubte URLs zwar aus,
+// verhindert aber nicht, dass jemand per direktem POST /run eine beliebige
+// URL einschleust - dieser Check ist die eigentliche Durchsetzung.
+function assertUrlAllowedForUser(userId, url) {
+  const allowed = db
+    .prepare('SELECT 1 FROM allowed_urls WHERE user_id = ? AND url = ?')
+    .get(userId, url);
+  if (!allowed) {
+    const err = new Error('URL nicht erlaubt für diesen Account');
+    err.statusCode = 403;
+    throw err;
   }
-  let parsed;
-  try {
-    parsed = new URL(raw.trim());
-  } catch {
-    throw new Error('URL ist ungültig.');
-  }
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('URL muss mit http:// oder https:// beginnen.');
-  }
-  return parsed.toString();
 }
 
 function validateOutputPath(raw) {
@@ -137,13 +273,14 @@ function findGeneratedReport(outputPath, filenamePrefix, title) {
 // POST /run – führt /test-app oder /document_app über die Claude Code CLI aus
 // ---------------------------------------------------------------------------
 
-app.post('/run', async (req, res) => {
+app.post('/run', requireLoginApi, async (req, res) => {
   let tempFile = null;
 
   try {
     const body = req.body || {};
     const workflowPrompt = validateWorkflowPrompt(body.workflowPrompt);
     const url = validateUrl(body.url);
+    assertUrlAllowedForUser(req.user.id, url);
     const outputPath = validateOutputPath(body.outputPath || ALLOWED_BASE_PATH);
     const title = validateTitle(body.title);
     const mode = validateMode(body.mode);
@@ -256,7 +393,7 @@ app.post('/run', async (req, res) => {
       error: `Es wurde keine Report-Datei erzeugt. Antwort von Claude Code: ${String(resultText).slice(0, 2000)}`,
     });
   } catch (validationError) {
-    return res.status(400).json({ success: false, error: validationError.message });
+    return res.status(validationError.statusCode || 400).json({ success: false, error: validationError.message });
   } finally {
     cleanupTempFile(tempFile);
   }
@@ -268,7 +405,7 @@ app.post('/run', async (req, res) => {
 // je nach Lauf unterschiedlich sein kann (Default: /workspace).
 // ---------------------------------------------------------------------------
 
-app.get('/download/:filename', (req, res) => {
+app.get('/download/:filename', requireLoginApi, (req, res) => {
   try {
     // path.basename entfernt jegliche Verzeichnis-Anteile aus dem Dateinamen
     // (verhindert Pfad-Traversal wie "../../etc/passwd").

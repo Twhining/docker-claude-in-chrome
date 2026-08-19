@@ -1,12 +1,10 @@
 'use strict';
 
 // -----------------------------------------------------------------------------
-// SQLite-Anbindung fuer das Admin-Panel.
-//
-// better-sqlite3 ist synchron (kein Callback-/Promise-Overhead noetig) und
-// reicht fuer dieses kleine, lokal genutzte Admin-Tool voellig aus.
-// Die Datenbankdatei liegt standardmaessig unter admin/data/admin.sqlite und
-// wird beim ersten Start automatisch angelegt (inkl. Tabellen).
+// Gemeinsame SQLite-Anbindung fuer server.js (Runner-App) und admin-server.js
+// (Admin-Panel). Beide Prozesse requiren dieselbe Datei und oeffnen damit
+// eigene Connections auf dieselbe Datenbankdatei (WAL-Modus erlaubt das
+// nebenlaeufig fuer diesen kleinen Anwendungsfall problemlos).
 // -----------------------------------------------------------------------------
 
 const path = require('path');
@@ -14,7 +12,7 @@ const fs = require('fs');
 const Database = require('better-sqlite3');
 
 const DATA_DIR = path.join(__dirname, 'data');
-const DB_PATH = process.env.ADMIN_DB_PATH || path.join(DATA_DIR, 'admin.sqlite');
+const DB_PATH = process.env.APP_DB_PATH || path.join(DATA_DIR, 'app.db');
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
@@ -27,6 +25,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
     claude_account_email TEXT,
     session_id TEXT,
     login_status TEXT NOT NULL DEFAULT 'not_configured',

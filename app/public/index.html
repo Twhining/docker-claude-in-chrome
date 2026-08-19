@@ -42,6 +42,23 @@
   .container {
     width: 100%;
     max-width: 720px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .top-bar a {
+    color: var(--text-muted);
+    text-decoration: underline;
+  }
+
+  .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -72,7 +89,8 @@
   }
 
   textarea,
-  input[type="text"] {
+  input[type="text"],
+  select {
     width: 100%;
     padding: 0.6rem 0.7rem;
     font-size: 0.9rem;
@@ -84,7 +102,8 @@
   }
 
   textarea:focus,
-  input[type="text"]:focus {
+  input[type="text"]:focus,
+  select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -149,7 +168,7 @@
     border: 1px solid transparent;
   }
 
-  .output.hidden {
+  .hidden {
     display: none;
   }
 
@@ -195,7 +214,7 @@
       --loading-border: #3b6bb0;
       --loading-text: #93c5fd;
     }
-    textarea, input[type="text"] {
+    textarea, input[type="text"], select {
       background: #12141a;
       color: var(--text);
     }
@@ -204,28 +223,35 @@
 </head>
 <body>
   <div class="container">
-    <h1>SAP Fiori App – Testen &amp; Dokumentieren</h1>
-    <p class="subtitle">Startet <code>/test-app</code> bzw. <code>/document_app</code> über die Claude Code CLI in diesem Container.</p>
-
-    <label for="workflowPrompt">Workflow-Prompt</label>
-    <textarea id="workflowPrompt" placeholder="Füge hier den kompletten Prompt-Text ein, den du aus deinem gespeicherten Shortcut in der Claude-in-Chrome-Extension kopiert hast."></textarea>
-
-    <label for="url">URL</label>
-    <input type="text" id="url" placeholder="https://deine-fiori-app.beispiel.de/...">
-
-    <label for="outputPath">Speicherort</label>
-    <input type="text" id="outputPath" value="/workspace">
-    <div class="hint">Muss innerhalb von /workspace liegen (persistenter, gemounteter Ordner).</div>
-
-    <label for="title">Titel/Bezeichnung</label>
-    <input type="text" id="title" placeholder="z.B. Bestellübersicht">
-
-    <div class="buttons">
-      <button id="btnTest" type="button">Testen</button>
-      <button id="btnDoc" type="button">Dokumentieren</button>
+    <div class="top-bar">
+      <span id="whoami"></span>
+      <a href="/logout">Logout</a>
     </div>
+    <div class="card">
+      <h1>SAP Fiori App – Testen &amp; Dokumentieren</h1>
+      <p class="subtitle">Startet <code>/test-app</code> bzw. <code>/document_app</code> über die Claude Code CLI in diesem Container.</p>
 
-    <div id="output" class="output hidden"></div>
+      <label for="workflowPrompt">Workflow-Prompt</label>
+      <textarea id="workflowPrompt" placeholder="Füge hier den kompletten Prompt-Text ein, den du aus deinem gespeicherten Shortcut in der Claude-in-Chrome-Extension kopiert hast."></textarea>
+
+      <label for="url">URL</label>
+      <select id="url"></select>
+      <div id="noUrlsHint" class="hint hidden">Für deinen Account sind keine URLs freigegeben. Bitte beim Admin melden.</div>
+
+      <label for="outputPath">Speicherort</label>
+      <input type="text" id="outputPath" value="/workspace">
+      <div class="hint">Muss innerhalb von /workspace liegen (persistenter, gemounteter Ordner).</div>
+
+      <label for="title">Titel/Bezeichnung</label>
+      <input type="text" id="title" placeholder="z.B. Bestellübersicht">
+
+      <div class="buttons">
+        <button id="btnTest" type="button">Testen</button>
+        <button id="btnDoc" type="button">Dokumentieren</button>
+      </div>
+
+      <div id="output" class="output hidden"></div>
+    </div>
   </div>
 
 <script>
@@ -242,9 +268,51 @@
     $('btnDoc').disabled = disabled;
   }
 
+  // Läuft die Session ab (z.B. weil der Admin den Account deaktiviert hat),
+  // antworten /api/* und /run mit 401 - dann konsequent zum Login zurück.
+  async function handleUnauthorized() {
+    window.location.href = '/login';
+  }
+
+  async function loadWhoami() {
+    try {
+      const res = await fetch('/api/me');
+      if (res.status === 401) return handleUnauthorized();
+      const data = await res.json();
+      $('whoami').textContent = `Eingeloggt als ${data.name} (${data.email})`;
+    } catch {
+      // Anzeige ist nur Komfort - bei Fehler einfach leer lassen.
+    }
+  }
+
+  async function loadUrls() {
+    const select = $('url');
+    try {
+      const res = await fetch('/api/my-urls');
+      if (res.status === 401) return handleUnauthorized();
+      const urls = await res.json();
+
+      if (!Array.isArray(urls) || urls.length === 0) {
+        select.innerHTML = '';
+        select.disabled = true;
+        $('noUrlsHint').classList.remove('hidden');
+        setButtonsDisabled(true);
+        return;
+      }
+
+      select.innerHTML = urls
+        .map((u) => `<option value="${escapeHtml(u.url)}">${u.label ? escapeHtml(u.label) + ' — ' : ''}${escapeHtml(u.url)}</option>`)
+        .join('');
+    } catch (err) {
+      $('output').classList.remove('hidden');
+      $('output').classList.add('error');
+      $('output').textContent = `❌ Erlaubte URLs konnten nicht geladen werden: ${err.message}`;
+    }
+  }
+
   async function run(mode) {
     const workflowPrompt = $('workflowPrompt').value;
-    const url = $('url').value.trim();
+    const url = $('url').value;
     const outputPath = $('outputPath').value.trim() || '/workspace';
     const title = $('title').value.trim();
 
@@ -261,6 +329,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workflowPrompt, url, outputPath, title, mode }),
       });
+
+      if (response.status === 401) return handleUnauthorized();
 
       let data;
       try {
@@ -289,6 +359,9 @@
 
   $('btnTest').addEventListener('click', () => run('test'));
   $('btnDoc').addEventListener('click', () => run('doc'));
+
+  loadWhoami();
+  loadUrls();
 </script>
 </body>
 </html>

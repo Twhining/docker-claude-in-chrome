@@ -8,6 +8,7 @@ services:
     ports:
       - "6901:6901"
       - "3000:3000"
+      - "4000:4000"
     volumes:
       # Chrome-Profil (inkl. installierter Extensions & deren Login-State)
       - chrome-profile:/root/.config/google-chrome
@@ -15,6 +16,8 @@ services:
       - claude-auth:/root/.claude
       # Lokaler Workspace-Ordner, z.B. für generierte Reports/Dateien
       - ./workspace:/workspace
+      # SQLite-Datenbank (Users/erlaubte URLs) - persistent über Neustarts hinweg
+      - app-data:/app/data
     environment:
       # VNC-Passwort für die noVNC-Verbindung (Port 6901).
       - VNC_PASSWORD=claude1234
@@ -23,8 +26,17 @@ services:
       # und Wert setzen bzw. per .env-Datei einspeisen).
       # - ANTHROPIC_API_KEY=sk-ant-...
       - DISPLAY=:99
+      # Admin-Panel-Passwort (Port 4000) - unbedingt aendern! Besser: über
+      # eine .env-Datei setzen statt hier im Klartext.
+      - ADMIN_PASSWORD=changeme
+      # Session-Secrets fest setzen, damit Logins Container-Neustarts
+      # überleben (ohne diese Variablen wird pro Neustart ein zufälliges
+      # Secret generiert und alle bestehenden Sessions werden ungültig).
+      # - ADMIN_SESSION_SECRET=
+      # - RUNNER_SESSION_SECRET=
     restart: unless-stopped
 
 volumes:
   chrome-profile:
   claude-auth:
+  app-data:
