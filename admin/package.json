@@ -1,0 +1,15 @@
+{
+  "name": "claude-admin-panel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Admin-Panel zur Verwaltung von Nutzern, Claude-Account-Zuordnung und erlaubten Ziel-URLs fuer das Claude-Docker-Automatisierungsprojekt",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  }
+}

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin-Panel – Claude-Docker-Automatisierung</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1f2430;
+    --text-muted: #6b7280;
+    --border: #d9dce1;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success-bg: #ecfdf3;
+    --success-border: #34d399;
+    --success-text: #065f46;
+    --error-bg: #fef2f2;
+    --error-border: #f87171;
+    --error-text: #991b1b;
+    --chip-bg: #eef2ff;
+    --chip-border: #c7d2fe;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2rem 1rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1180px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 0.25rem;
+  }
+
+  h2 {
+    font-size: 1.05rem;
+    margin: 0 0 1rem;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+
+  /* --- Login ------------------------------------------------------------ */
+
+  #loginView .card {
+    max-width: 380px;
+    margin: 4rem auto;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0 0 0.35rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  select {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  button {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    background: var(--accent);
+    transition: background 0.15s ease;
+    white-space: nowrap;
+  }
+
+  button:hover:not(:disabled) { background: var(--accent-hover); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  button.danger { background: var(--danger); }
+  button.danger:hover:not(:disabled) { background: var(--danger-hover); }
+
+  button.secondary { background: var(--text-muted); }
+  button.secondary:hover:not(:disabled) { background: #4b5563; }
+
+  button.small { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+
+  .msg {
+    margin-top: 1rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+  }
+  .msg.hidden { display: none; }
+  .msg.success { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+  .msg.error { background: var(--error-bg); border-color: var(--error-border); color: var(--error-text); }
+
+  /* --- New user form ------------------------------------------------------ */
+
+  .new-user-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .new-user-form .field { flex: 1; min-width: 180px; }
+  .new-user-form label { margin-bottom: 0.3rem; }
+
+  /* --- Table -------------------------------------------------------------- */
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  tr.inactive { opacity: 0.5; }
+
+  td.name-cell { font-weight: 600; }
+  td.email-cell { color: var(--text-muted); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .status-not_configured { background: #f3f4f6; color: #4b5563; }
+  .status-chrome_pending { background: #fef3c7; color: #92400e; }
+  .status-claude_code_pending { background: #dbeafe; color: #1e40af; }
+  .status-ready { background: var(--success-bg); color: var(--success-text); }
+
+  .url-list { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+  .url-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.78rem;
+    max-width: 100%;
+  }
+  .url-chip .url-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .url-chip .url-text .label { color: var(--text-muted); }
+  .url-chip button {
+    background: transparent;
+    color: var(--danger);
+    padding: 0 0.2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .url-chip button:hover { background: transparent; text-decoration: underline; }
+
+  .add-url-form { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .add-url-form input { width: auto; flex: 1; min-width: 110px; font-size: 0.78rem; padding: 0.35rem 0.5rem; }
+  .add-url-form button { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+
+  .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+  .active-toggle { display: flex; align-items: center; gap: 0.4rem; font-weight: 400; }
+  .active-toggle input { width: auto; }
+
+  .empty-state { color: var(--text-muted); padding: 1.5rem 0; text-align: center; }
+
+  .hidden { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161c;
+      --card-bg: #1c1f27;
+      --text: #e7e9ee;
+      --text-muted: #9aa1af;
+      --border: #2d323d;
+      --success-bg: #0d2418;
+      --success-border: #22a06b;
+      --success-text: #6ee7b7;
+      --error-bg: #2a1313;
+      --error-border: #dc4a4a;
+      --error-text: #fca5a5;
+      --chip-bg: #1c2333;
+      --chip-border: #33406b;
+    }
+    input, select { background: #12141a; color: var(--text); }
+    .status-not_configured { background: #262a33; color: #b0b7c3; }
+    .status-chrome_pending { background: #3a2f0d; color: #fcd34d; }
+    .status-claude_code_pending { background: #10233f; color: #93c5fd; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loginView" class="container hidden">
+  <div class="card">
+    <h1>Admin-Panel</h1>
+    <p class="subtitle">Bitte einloggen, um fortzufahren.</p>
+    <label for="loginPassword">Passwort</label>
+    <input type="password" id="loginPassword" autocomplete="current-password">
+    <div class="new-user-form" style="border:none;padding:0;margin-top:1rem;">
+      <button id="btnLogin" type="button" style="flex:1;">Einloggen</button>
+    </div>
+    <div id="loginMsg" class="msg hidden"></div>
+  </div>
+</div>
+
+<div id="panelView" class="container hidden">
+  <div class="card">
+    <div class="top-bar">
+      <div>
+        <h1>Admin-Panel</h1>
+        <p class="subtitle" style="margin-bottom:0;">Nutzer, Claude-Account-Zuordnung &amp; erlaubte Ziel-Webseiten verwalten.</p>
+      </div>
+      <button id="btnLogout" class="secondary" type="button">Logout</button>
+    </div>
+
+    <h2>Neuen User anlegen</h2>
+    <div class="new-user-form">
+      <div class="field">
+        <label for="newUserName">Name</label>
+        <input type="text" id="newUserName" placeholder="Max Mustermann">
+      </div>
+      <div class="field">
+        <label for="newUserEmail">E-Mail</label>
+        <input type="email" id="newUserEmail" placeholder="max@beispiel.de">
+      </div>
+      <button id="btnAddUser" type="button">User anlegen</button>
+    </div>
+
+    <div id="panelMsg" class="msg hidden"></div>
+
+    <h2>Nutzer</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>E-Mail</th>
+            <th>Claude-Account</th>
+            <th>Session</th>
+            <th>Login-Status</th>
+            <th>Erlaubte URLs</th>
+            <th>Aktiv</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state hidden">Noch keine Nutzer angelegt.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const LOGIN_STATUS_LABELS = {
+    not_configured: 'Nicht konfiguriert',
+    chrome_pending: 'Chrome-Login ausstehend',
+    claude_code_pending: 'Claude-Code-Login ausstehend',
+    ready: 'Bereit',
+  };
+  const LOGIN_STATUS_VALUES = Object.keys(LOGIN_STATUS_LABELS);
+
+  let sessionOptions = [];
+  let users = [];
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function showMsg(el, text, type) {
+    el.textContent = text;
+    el.classList.remove('hidden', 'success', 'error');
+    el.classList.add(type);
+  }
+
+  function hideMsg(el) {
+    el.classList.add('hidden');
+  }
+
+  // --- Ansicht wechseln -----------------------------------------------------
+
+  function showLogin() {
+    $('panelView').classList.add('hidden');
+    $('loginView').classList.remove('hidden');
+  }
+
+  function showPanel() {
+    $('loginView').classList.add('hidden');
+    $('panelView').classList.remove('hidden');
+    loadSessions();
+    loadUsers();
+  }
+
+  async function checkStatus() {
+    try {
+      const res = await fetch('/admin/status');
+      const data = await res.json();
+      if (data.authenticated) {
+        showPanel();
+      } else {
+        showLogin();
+      }
+    } catch {
+      showLogin();
+    }
+  }
+
+  // --- Login/Logout ----------------------------------------------------------
+
+  async function login() {
+    hideMsg($('loginMsg'));
+    const password = $('loginPassword').value;
+    try {
+      const res = await fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        $('loginPassword').value = '';
+        showPanel();
+      } else {
+        showMsg($('loginMsg'), data.error || 'Login fehlgeschlagen.', 'error');
+      }
+    } catch (err) {
+      showMsg($('loginMsg'), `Netzwerkfehler: ${err.message}`, 'error');
+    }
+  }
+
+  async function logout() {
+    try {
+      await fetch('/admin/logout', { method: 'POST' });
+    } finally {
+      showLogin();
+    }
+  }
+
+  // --- API-Helper: leitet bei 401 automatisch zum Login zurueck --------------
+
+  async function api(url, options) {
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+      showLogin();
+      throw new Error('Session abgelaufen, bitte erneut einloggen.');
+    }
+    let data = null;
+    try { data = await res.json(); } catch { /* kein JSON-Body */ }
+    if (!res.ok) {
+      throw new Error((data && data.error) || `Fehler (Status ${res.status}).`);
+    }
+    return data;
+  }
+
+  // --- Daten laden -------------------------------------------------------
+
+  async function loadSessions() {
+    try {
+      sessionOptions = await api('/api/sessions');
+    } catch (err) {
+      sessionOptions = [];
+    }
+  }
+
+  async function loadUsers() {
+    try {
+      users = await api('/api/users');
+      renderUsers();
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  // --- Rendering -----------------------------------------------------------
+
+  function sessionOptionsHtml(selected) {
+    let html = `<option value=""${!selected ? ' selected' : ''}>–</option>`;
+    for (const s of sessionOptions) {
+      html += `<option value="${escapeHtml(s)}"${s === selected ? ' selected' : ''}>${escapeHtml(s)}</option>`;
+    }
+    return html;
+  }
+
+  function loginStatusOptionsHtml(selected) {
+    return LOGIN_STATUS_VALUES.map(
+      (v) => `<option value="${v}"${v === selected ? ' selected' : ''}>${LOGIN_STATUS_LABELS[v]}</option>`
+    ).join('');
+  }
+
+  function urlListHtml(user) {
+    const items = user.allowed_urls
+      .map(
+        (u) => `
+        <li class="url-chip">
+          <span class="url-text" title="${escapeHtml(u.url)}">
+            ${u.label ? `<span class="label">${escapeHtml(u.label)}:</span> ` : ''}${escapeHtml(u.url)}
+          </span>
+          <button type="button" class="small" data-action="delete-url" data-url-id="${u.id}" title="URL entfernen">×</button>
+        </li>`
+      )
+      .join('');
+    return `
+      <ul class="url-list">${items}</ul>
+      <div class="add-url-form">
+        <input type="url" placeholder="https://..." data-role="new-url" data-user-id="${user.id}">
+        <input type="text" placeholder="Label (optional)" data-role="new-url-label" data-user-id="${user.id}">
+        <button type="button" class="small" data-action="add-url" data-user-id="${user.id}">+ URL</button>
+      </div>
+    `;
+  }
+
+  function renderUsers() {
+    const tbody = $('usersTableBody');
+    $('emptyState').classList.toggle('hidden', users.length > 0);
+
+    tbody.innerHTML = users
+      .map((user) => {
+        return `
+        <tr data-user-id="${user.id}" class="${user.active ? '' : 'inactive'}">
+          <td class="name-cell">${escapeHtml(user.name)}</td>
+          <td class="email-cell">${escapeHtml(user.email)}</td>
+          <td>
+            <input type="email" data-field="claude_account_email" value="${escapeHtml(user.claude_account_email || '')}" placeholder="account@anthropic.com">
+          </td>
+          <td>
+            <select data-field="session_id">${sessionOptionsHtml(user.session_id)}</select>
+          </td>
+          <td>
+            <select data-field="login_status">${loginStatusOptionsHtml(user.login_status)}</select>
+            <div style="margin-top:0.3rem;"><span class="status-badge status-${user.login_status}">${LOGIN_STATUS_LABELS[user.login_status] || user.login_status}</span></div>
+          </td>
+          <td style="min-width:220px;">${urlListHtml(user)}</td>
+          <td>
+            <label class="active-toggle">
+              <input type="checkbox" data-field="active" ${user.active ? 'checked' : ''}>
+              ${user.active ? 'aktiv' : 'inaktiv'}
+            </label>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button type="button" class="small" data-action="save">Speichern</button>
+              <button type="button" class="small danger" data-action="deactivate">Deaktivieren</button>
+            </div>
+          </td>
+        </tr>`;
+      })
+      .join('');
+  }
+
+  // --- User anlegen ---------------------------------------------------------
+
+  async function addUser() {
+    hideMsg($('panelMsg'));
+    const name = $('newUserName').value.trim();
+    const email = $('newUserEmail').value.trim();
+    try {
+      await api('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
+      });
+      $('newUserName').value = '';
+      $('newUserEmail').value = '';
+      await loadUsers();
+      showMsg($('panelMsg'), 'User angelegt.', 'success');
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  // --- User speichern / deaktivieren -----------------------------------------
+
+  async function saveUserRow(tr) {
+    const userId = tr.dataset.userId;
+    const body = {
+      claude_account_email: tr.querySelector('[data-field="claude_account_email"]').value.trim() || null,
+      session_id: tr.querySelector('[data-field="session_id"]').value || null,
+      login_status: tr.querySelector('[data-field="login_status"]').value,
+      active: tr.querySelector('[data-field="active"]').checked,
+    };
+    try {
+      await api(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      await loadUsers();
+      showMsg($('panelMsg'), 'Gespeichert.', 'success');
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  async function deactivateUser(userId) {
+    try {
+      await api(`/api/users/${userId}`, { method: 'DELETE' });
+      await loadUsers();
+      showMsg($('panelMsg'), 'User deaktiviert.', 'success');
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  // --- URLs verwalten ---------------------------------------------------
+
+  async function addUrl(userId, tr) {
+    const urlInput = tr.querySelector(`[data-role="new-url"][data-user-id="${userId}"]`);
+    const labelInput = tr.querySelector(`[data-role="new-url-label"][data-user-id="${userId}"]`);
+    const url = urlInput.value.trim();
+    const label = labelInput.value.trim();
+    if (!url) return;
+    try {
+      await api(`/api/users/${userId}/urls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, label: label || undefined }),
+      });
+      await loadUsers();
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  async function deleteUrl(urlId) {
+    try {
+      await api(`/api/urls/${urlId}`, { method: 'DELETE' });
+      await loadUsers();
+    } catch (err) {
+      showMsg($('panelMsg'), err.message, 'error');
+    }
+  }
+
+  // --- Event-Delegation innerhalb der Tabelle --------------------------------
+
+  $('usersTableBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const tr = btn.closest('tr');
+    const action = btn.dataset.action;
+
+    if (action === 'save') saveUserRow(tr);
+    if (action === 'deactivate') {
+      if (confirm('Diesen User wirklich deaktivieren?')) deactivateUser(tr.dataset.userId);
+    }
+    if (action === 'add-url') addUrl(btn.dataset.userId, tr);
+    if (action === 'delete-url') deleteUrl(btn.dataset.urlId);
+  });
+
+  $('btnLogin').addEventListener('click', login);
+  $('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+  $('btnLogout').addEventListener('click', logout);
+  $('btnAddUser').addEventListener('click', addUser);
+
+  checkStatus();
+</script>
+</body>
+</html>
